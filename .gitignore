@@ -1,0 +1,11 @@
+*.csv
+*.json
+*.geojson
+*.xlsx
+*.png
+*.eps
+*.svg
+
+data/*
+
+.python-version
