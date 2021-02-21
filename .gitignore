@@ -7,5 +7,6 @@
 *.svg
 
 data/*
+Noto*
 
 .python-version
