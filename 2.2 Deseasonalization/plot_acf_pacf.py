@@ -126,15 +126,15 @@ def plot():
                          use_vlines=False, markersize=1.5, linestyle='solid', linewidth=1)
 
             tpl.plot_pacf(df_raw[target], ax=axs[rowi, 1], lags=24,
-                          use_vlines=False, markersize=1.5, linestyle='solid', linewidth=1)
+                          use_vlines=True, markersize=1.5, linestyle='solid', linewidth=1)
             tpl.plot_pacf(df_res[target], ax=axs[rowi, 3], lags=24,
-                          use_vlines=False, markersize=1.5, linestyle='solid', linewidth=1)
+                          use_vlines=True, markersize=1.5, linestyle='solid', linewidth=1)
 
             if rowi == nrows-1:
-                axs[rowi, 0].set_xlabel(r'lag $s$ (HOUR)', fontsize='small')
-                axs[rowi, 1].set_xlabel(r'lag $s$ (HOUR)', fontsize='small')
+                for coli in range(ncols):
+                    axs[rowi, coli].set_xlabel(r'lag $s$ (HOUR)', fontsize='small')
 
-            for coli in range(2):
+            for coli in range(ncols):
                 axs[rowi, coli].set_title("")
                 axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.13, 1.05), xycoords='axes fraction',
                                 fontsize='medium', fontweight='bold')
