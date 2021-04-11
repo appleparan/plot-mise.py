@@ -42,11 +42,12 @@ plt.rcParams["mathtext.fontset"] = "stix"
 
 def plot_(df, df_grp, output_dir, target='PM10'):
     def get_color_map():
-        # create color from FFFFFF to 1A4E66
+        # create color from #FFFFFF to #1A4E66
         color_vals_b = np.ones((256, 4))
         color_vals_b[:, 0] = np.linspace(26/256, 1, 256)
         color_vals_b[:, 1] = np.linspace(78/256, 1, 256)
         color_vals_b[:, 2] = np.linspace(102/256, 1, 256)
+        # create color from #FFFFFF to #32454d
         color_vals_g = np.ones((256, 4))
         color_vals_g[:, 0] = np.linspace(50/256, 1, 256)
         color_vals_g[:, 1] = np.linspace(69/256, 1, 256)

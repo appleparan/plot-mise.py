@@ -109,9 +109,9 @@ def plot():
     for station, loc in stations_latlon.items():
         lat, lon = loc[0], loc[1]
         p = Ellipse((lat, lon), point_r, point_r / aspect, fc='#1A4E66', zorder=7)
-        if station == '강서구' or station == '서초구':
-            p = Ellipse((lat, lon), 2.0 * point_r, 2.0 * (point_r / aspect),
-                        fc='#E26C22', zorder=7)
+        # if station == '강서구' or station == '서초구':
+        #     p = Ellipse((lat, lon), 2.0 * point_r, 2.0 * (point_r / aspect),
+        #                 fc='#E26C22', zorder=7)
         if station == '종로구':
             p = Ellipse((lat, lon), 2.0 * point_r, 2.0 * (point_r / aspect),
                         fc='#00A1F1', zorder=7)

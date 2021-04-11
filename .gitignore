@@ -1,4 +1,6 @@
 *.csv
+*.xls
+*.xlsx
 *.json
 *.geojson
 *.xlsx

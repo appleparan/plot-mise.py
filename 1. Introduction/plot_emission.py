@@ -55,6 +55,9 @@ def plot_(data_dir, output_dir, target='PM10'):
 
     cmap = plt.get_cmap('tab20')
     colors = [mcolors.rgb2hex(c) for c in cmap.colors]
+    # swap 
+    colors[11], colors[1] = colors[1], colors[11]
+    colors[2], colors[3] = colors[3], colors[2]
 
     ax.stackplot(years, df[years].to_numpy().astype(np.int64),
                  labels=emissions, colors=colors)
