@@ -19,7 +19,7 @@ import matplotlib.dates as mdates
 import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
 import matplotlib.colors as mcolors
-
+import matplotlib.ticker as mticker
 import statsmodels.api as sm
 import statsmodels.tsa.stattools as tsast
 import statsmodels.graphics.tsaplots as tpl
@@ -35,19 +35,19 @@ INPUTDATA_path = SCRIPT_DIR / '..' / 'data'
 SEOULTZ = timezone('Asia/Seoul')
 
 TARGET_MAP = {
-    "SO2": r'$\mathrm{\mathsf{SO}}_{2}$',
-    "CO": r'$\mathrm{\mathsf{CO}}$',
-    "O3": r'$\mathrm{\mathsf{O}}}_{3}$',
-    "NO2": r'$\mathrm{\mathsf{NO}}_{2}$',
-    'PM10': r'$\mathrm{\mathsf{PM}}_{10}$',
-    'PM25': r'$\mathrm{\mathsf{PM}}_{2.5}$',
-    'temp': r'$\mathrm{\mathsf{Temperature}}$',
-    'u': r'$\mathrm{\mathsf{Wind Speed (Zonal)}}$',
-    'v': r'$\mathrm{\mathsf{Wind Speed (Meridional)}}$',
-    'pres': r'$\mathrm{\mathsf{Pressure}}$',
-    'humid': r'$\mathrm{\mathsf{Relative Humidity}}$',
-    'prep': r'$\mathrm{\mathsf{Rainfall}}$',
-    'snow': r'$\mathrm{\mathsf{Snow}}$'
+    "SO2": r'\mathrm{\mathsf{SO}}_{2}',
+    "CO": r'\mathrm{\mathsf{CO}}',
+    "O3": r'\mathrm{\mathsf{O}}}_{3}',
+    "NO2": r'\mathrm{\mathsf{NO}}_{2}',
+    'PM10': r'\mathrm{\mathsf{PM}}_{10}',
+    'PM25': r'\mathrm{\mathsf{PM}}_{2.5}',
+    'temp': r'\mathrm{\mathsf{Temperature}}',
+    'u': r'\mathrm{\mathsf{Wind Speed (Zonal)}}',
+    'v': r'\mathrm{\mathsf{Wind Speed (Meridional)}}',
+    'pres': r'\mathrm{\mathsf{Pressure}}',
+    'humid': r'\mathrm{\mathsf{Relative Humidity}}',
+    'prep': r'\mathrm{\mathsf{Rainfall}}',
+    'snow': r'\mathrm{\mathsf{Snow}}'
 }
 
 def plot():
@@ -57,9 +57,16 @@ def plot():
     output_dir = SCRIPT_DIR / 'out'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
 
+    plot_data_dir = SCRIPT_DIR / 'out' / 'csv'
+    Path.mkdir(plot_data_dir, parents=True, exist_ok=True)
+    plot_png_dir = SCRIPT_DIR / 'out' / 'png'
+    Path.mkdir(plot_png_dir, parents=True, exist_ok=True)
+    plot_svg_dir = SCRIPT_DIR / 'out' / 'svg'
+    Path.mkdir(plot_svg_dir, parents=True, exist_ok=True)
+
     stations = ['종로구']
     targets = ['PM10', 'PM25']
-    nlags = 4
+    nlags = 7
 
     # 1 2 3 4
     # 5 6 7 8
@@ -83,6 +90,7 @@ def plot():
     # rough figure size
     w_pad, h_pad = 0.1, 0.30
     # inch/1pt (=1.0inch / 72pt) * 10pt/row * 8row (6 row + margins)
+    # ax_size = min(7.22 / ncols, 9.45 / nrows)
     ax_size = min(7.22 / ncols, 9.45 / nrows)
     # legend_size = 0.6 * fig_size
     fig_size_w = ax_size*ncols
@@ -106,6 +114,9 @@ def plot():
         fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
 
         for rowi, target in enumerate(targets):
+            Path.mkdir(plot_data_dir / target, parents=True, exist_ok=True)
+            Path.mkdir(plot_png_dir  / target, parents=True, exist_ok=True)
+            Path.mkdir(plot_svg_dir  / target, parents=True, exist_ok=True)
             dataset = data.UnivariateRNNMeanSeasonalityDataset(
                             station_name=station_name,
                             target=target,
@@ -121,27 +132,39 @@ def plot():
             df_res = dataset.ys
 
             tpl.plot_acf(df_raw[target], ax=axs[rowi, 0], fft=True, lags=nlags*24,
-                         use_vlines=False, markersize=1.5, linestyle='solid', linewidth=1)
+                         use_vlines=False, marker=None, linestyle='solid', linewidth=1)
             tpl.plot_acf(df_res[target], ax=axs[rowi, 2], fft=True, lags=nlags*24,
-                         use_vlines=False, markersize=1.5, linestyle='solid', linewidth=1)
+                         use_vlines=False, marker=None, linestyle='solid', linewidth=1)
 
-            tpl.plot_pacf(df_raw[target], ax=axs[rowi, 1], lags=24,
-                          use_vlines=True, markersize=1.5, linestyle='solid', linewidth=1)
-            tpl.plot_pacf(df_res[target], ax=axs[rowi, 3], lags=24,
-                          use_vlines=True, markersize=1.5, linestyle='solid', linewidth=1)
+            axs[rowi, 0].set_ylabel(r'$C(s)$ $\mathrm{{({0:s})}}$'.format(TARGET_MAP[target]), fontsize='small')
+
+            tpl.plot_pacf(df_raw[target], ax=axs[rowi, 1], lags=12,
+                          use_vlines=True, markersize=2)
+            tpl.plot_pacf(df_res[target], ax=axs[rowi, 3], lags=12,
+                          use_vlines=True, markersize=2)
 
             if rowi == nrows-1:
                 for coli in range(ncols):
-                    axs[rowi, coli].set_xlabel(r'lag $s$ (HOUR)', fontsize='small')
+                    axs[rowi, coli].set_xlabel(r'lag $s$ (hour)', fontsize='small')
 
+            # ACF
+            axs[rowi, 0].xaxis.set_major_locator(mticker.MultipleLocator(24))
+            axs[rowi, 2].xaxis.set_major_locator(mticker.MultipleLocator(24))
+            # PACF
+            axs[rowi, 1].xaxis.set_major_locator(mticker.MultipleLocator(6))
+            axs[rowi, 3].xaxis.set_major_locator(mticker.MultipleLocator(6))
             for coli in range(ncols):
                 axs[rowi, coli].set_title("")
+                axs[rowi, coli].yaxis.set_major_locator(mticker.MultipleLocator(0.2))
                 axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.13, 1.05), xycoords='axes fraction',
                                 fontsize='medium', fontweight='bold')
+
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
                     tick.label.set_fontsize('x-small')
                 for tick in axs[rowi, coli].yaxis.get_major_ticks():
                     tick.label.set_fontsize('x-small')
+
+            # dataset.plot_seasonality(plot_data_dir / target, plot_png_dir / target, plot_svg_dir / target)
 
         output_fname = f"{station_name}_acf_pacf"
         png_path = output_dir / (output_fname + '.png')
