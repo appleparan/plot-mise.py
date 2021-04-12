@@ -12,3 +12,4 @@ data/*
 Noto*
 
 .python-version
+__pycache__
