@@ -520,6 +520,11 @@ class UnivariateRNNMeanSeasonalityDataset(BaseDataset):
 
         return _inv_transYs
 
+    def plot_seasonality(self, data_dir, png_dir, svg_dir):
+        p = self._scaler_Y.named_transformers_['num']
+        p['seasonalitydecompositor'].plot(self._xs_raw, self.target,
+                                          self.fdate, self.tdate, data_dir, png_dir, svg_dir)
+
     def to_csv(self, fpath):
         self._df.to_csv(fpath)
 
@@ -1534,7 +1539,7 @@ class SeasonalityDecompositor_AWH(TransformerMixin, BaseEstimator):
 
         # 1. Annual Seasonality (mmdd: 0101 ~ 1231)
         # dictionary for key (mmdd) to value (daily average)
-        sea_annual, df_sea_annual, resid_annual = utils.periodic_mean(
+        sea_annual, df_sea_annual, df_resid_annual = utils.periodic_mean(
             X_d, 'raw', 'y', smoothing=self.smoothing, smoothingFrac=self.smoothingFrac)
 
         if '0229' not in sea_annual:
@@ -1543,8 +1548,8 @@ class SeasonalityDecompositor_AWH(TransformerMixin, BaseEstimator):
         # 2. Weekly Seasonality (w: 0 ~ 6)
         # dictionary for key (w: 0~6) to value (daily average)
         # Weekly seasonality computes seasonality from annual residaul
-        sea_weekly, df_sea_weekly, resid_weekly = utils.periodic_mean(
-            resid_annual.copy(), 'resid', 'w')
+        sea_weekly, df_sea_weekly, df_resid_weekly = utils.periodic_mean(
+            df_resid_annual.copy(), 'resid', 'w')
 
         # 3. Hourly Seasonality (hh: 00 ~ 23)
         # join seasonality to original X_h DataFrame
@@ -1565,16 +1570,18 @@ class SeasonalityDecompositor_AWH(TransformerMixin, BaseEstimator):
         X_h['key_h'] = X_h.index.map(key_h)
 
         ## compute hourly populated seasonality from daily residuals
-        X_h_spop = df_sea_annual.merge(X_h, how='right',
-                                         on='key_md', validate="1:m").dropna()
+        X_h_spop = df_sea_annual.merge(X_h, how='left',
+                                         on='key_md', left_index=True, validate="1:m").dropna()
         X_h_spop = X_h_spop.rename(columns={'sea': 'sea_annual'})
-        X_h_spop.set_index(X_h.index, inplace=True)
-        X_h_spop = df_sea_weekly.merge(X_h_spop, how='right',
-                                         on='key_w', validate="1:m").dropna()
+        # X_h_spop.set_index(X_h.index, inplace=True)
+        X_h_spop = df_sea_weekly.merge(X_h_spop, how='left',
+                                         on='key_w', left_index=True, validate="1:m").dropna()
         X_h_spop = X_h_spop.rename(columns={'sea': 'sea_weekly'})
-        X_h_spop.set_index(X_h.index, inplace=True)
+        # X_h_spop.set_index(X_h.index, inplace=True)
 
         ## new hourly residual column from daily residuals
+        X_h_spop['resid_y'] = X_h_spop['raw'] - X_h_spop['sea_annual']
+        X_h_spop['resid_w'] = X_h_spop['raw'] - X_h_spop['sea_annual'] - X_h_spop['sea_weekly']
         X_h_spop['resid_d'] = X_h_spop['raw'] - X_h_spop['sea_annual'] - X_h_spop['sea_weekly']
 
         ## Check no missing values
@@ -1583,20 +1590,24 @@ class SeasonalityDecompositor_AWH(TransformerMixin, BaseEstimator):
                 "Merge Error: something missing when populate daily averaged DataFrame")
 
         ## Compute hourly seasonality
-        sea_hourly, df_sea_hourly, resid_hourly = utils.periodic_mean(
+        sea_hourly, df_sea_hourly, df_resid_hourly = utils.periodic_mean(
             X_h_spop.copy(), 'resid_d', 'h')
 
         ## Add column from index for key
         df_sea_hourly['key_h'] = df_sea_hourly.index
 
         ## merge hourly seasonality to orignal hourly DataFram
-        X_h_hourly = df_sea_hourly.merge(X_h, how='right',
-                                         on='key_h', validate="1:m").dropna()
+        # print(df_sea_hourly.head(27))
+        X_h_hourly = df_sea_hourly.merge(X_h_spop, how='left',
+                                         on='key_h', left_index=True, validate="1:m").dropna()
+
         X_h_hourly = X_h_hourly.rename(columns={'sea': 'sea_hourly'})
-        X_h_hourly.set_index(X_h.index, inplace=True)
+        # X_h_hourly.set_index(X_h.index, inplace=True)
+        # print(X_h_hourly.head(27))
         ## Subtract annual and weekly seasonality
-        X_h_spop['sea_hourly']= X_h_hourly['sea_hourly']
+        X_h_spop['sea_hourly'] = X_h_hourly['sea_hourly']
         X_h_spop['resid'] = X_h_spop['resid_d'] - X_h_hourly['sea_hourly']
+        X_h_spop['resid_h'] = X_h_spop['resid_d'] - X_h_hourly['sea_hourly']
         ## Sort by DateTimeIndex
         X_h_spop = X_h_spop.sort_index()
 
@@ -1607,7 +1618,7 @@ class SeasonalityDecompositor_AWH(TransformerMixin, BaseEstimator):
         X_h_spop.drop('key_h', axis='columns')
 
         if return_resid == True:
-            return resid_annual, resid_weekly, X_h_spop, resid_hourly
+            return X_h_spop['resid_y'], X_h_spop['resid_w'], X_h_spop, X_h_spop['resid_h']
 
         return sea_annual, sea_weekly, sea_hourly
 
@@ -1677,7 +1688,6 @@ class SeasonalityDecompositor_AWH(TransformerMixin, BaseEstimator):
             return _X_sum
 
         resid = X.apply(sub_seasonality, 0)
-
         return resid.to_numpy()
 
     def inverse_transform(self, Y: pd.DataFrame):
@@ -2221,10 +2231,10 @@ class SeasonalityDecompositor_AWH(TransformerMixin, BaseEstimator):
 
         df_resid_annual, df_resid_weekly, df_resid_weekly_pop, df_resid_hourly = \
             self.compute_seasonality(df.loc[:, target], return_resid=True)
-        df_resid_annual.rename(columns={'resid': target}, inplace=True)
-        df_resid_weekly.rename(columns={'resid': target}, inplace=True)
-        df_resid_weekly_pop.rename(columns={'resid': target}, inplace=True)
-        df_resid_hourly.rename(columns={'resid': target}, inplace=True)
+        df_resid_annual = df_resid_annual.to_frame().rename(columns={'resid_y': target})
+        df_resid_weekly = df_resid_weekly.to_frame().rename(columns={'resid_w': target})
+        # df_resid_weekly_pop = df_resid_weekly_pop.to_frame().rename(columns={'resid': target})
+        df_resid_hourly = df_resid_hourly.to_frame().rename(columns={'resid_h': target})
 
         dict_corr_dist = {}
 
@@ -2286,10 +2296,10 @@ class SeasonalityDecompositor_AWH(TransformerMixin, BaseEstimator):
 
         df_resid_annual, df_resid_weekly, df_resid_weekly_pop, df_resid_hourly = \
             self.compute_seasonality(df.loc[:, target], return_resid=True)
-        df_resid_annual.rename(columns={'resid': target}, inplace=True)
-        df_resid_weekly.rename(columns={'resid': target}, inplace=True)
-        df_resid_weekly_pop.rename(columns={'resid': target}, inplace=True)
-        df_resid_hourly.rename(columns={'resid': target}, inplace=True)
+        df_resid_annual = df_resid_annual.to_frame().rename(columns={'resid_y': target})
+        df_resid_weekly = df_resid_weekly.to_frame().rename(columns={'resid_w': target})
+        # df_resid_weekly_pop = df_resid_weekly_pop.to_frame().rename(columns={'resid': target})
+        df_resid_hourly = df_resid_hourly.to_frame().rename(columns={'resid_h': target})
 
         df_resid_annual.to_csv(data_dir / ("resid_annual.csv"))
         df_resid_weekly.to_csv(data_dir / ("resid_weekly.csv"))
