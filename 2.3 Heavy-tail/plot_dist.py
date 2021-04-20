@@ -54,7 +54,7 @@ TARGET_MAP = {
 INPUTDATA_path = SCRIPT_DIR / '..' / 'data'
 SEOULTZ = timezone('Asia/Seoul')
 
-def plot_powerlaw(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
+def plot_ccdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
     assert len(targets) > 1
     jongno_fname = 'input_jongno_imputed_hourly_pandas.csv'
     seoul_fname = 'input_seoul_imputed_hourly_pandas.csv'
@@ -116,8 +116,8 @@ def plot_powerlaw(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
             df_raw = dataset.ys_raw
             df_res = dataset.ys
 
-            arr_raw = df_raw[target].to_numpy() 
-            arr_res = df_res[target].to_numpy() 
+            arr_raw = df_raw[target].to_numpy()
+            arr_res = df_res[target].to_numpy()
             dist_raw = np.random.normal(np.mean(arr_raw), np.std(arr_raw), len(arr_raw))
             dist_res = np.random.normal(np.mean(arr_res), np.std(arr_res), len(arr_res))
             df_plot_raw = pd.DataFrame.from_dict({target: arr_raw, 'gaussian': dist_raw})
@@ -137,11 +137,11 @@ def plot_powerlaw(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
             print(f"{target} - res power law - xmin, alpha : {res_fit.power_law.xmin}, {res_fit.power_law.alpha}")
             print(f"{target} - res lognormal - mu, sigma : {res_fit.lognormal.mu}, {res_fit.lognormal.sigma}")
 
-            axs[0, 0].set_title('Raw values')
-            axs[0, 1].set_title('Deseasonlized values')
+            axs[0, 0].set_title('Raw')
+            axs[0, 1].set_title('Deseasonlized')
 
             # disable y label on right side plot
-            axs[rowi, 0].set_ylabel(f"PDF of " + rf"${TARGET_MAP[target]}$")
+            axs[rowi, 0].set_ylabel(f"CCDF - " + rf"${TARGET_MAP[target]}$")
             axs[rowi, 1].yaxis.label.set_visible(False)
 
             # remove legend title
@@ -152,14 +152,16 @@ def plot_powerlaw(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
                 axs[rowi, 1].set_xlabel('')
                 # axs[rowi, coli].set_xlabel(target)
                 axs[rowi, coli].set_yscale('log')
+                axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
+                                fontsize='medium', fontweight='bold')
                 # small yticks
                 for tick in axs[rowi, coli].yaxis.get_major_ticks():
                     tick.label.set_fontsize('x-small')
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
                     tick.label.set_fontsize('x-small')
-            
+
         fig.tight_layout()
-        output_prefix = f'{station_name}_powerlaw'
+        output_prefix = f'{station_name}_ccdf'
         png_path = output_dir / (output_prefix + '.png')
         svg_path = output_dir / (output_prefix + '.svg')
         plt.savefig(png_path, dpi=600)
@@ -228,8 +230,8 @@ def plot_cdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
             df_raw = dataset.ys_raw
             df_res = dataset.ys
 
-            arr_raw = df_raw[target].to_numpy() 
-            arr_res = df_res[target].to_numpy() 
+            arr_raw = df_raw[target].to_numpy()
+            arr_res = df_res[target].to_numpy()
             dist_raw = np.random.normal(np.mean(arr_raw), np.std(arr_raw), len(arr_raw))
             dist_res = np.random.normal(np.mean(arr_res), np.std(arr_res), len(arr_res))
             df_plot_raw = pd.DataFrame.from_dict({target: arr_raw, 'gaussian': dist_raw})
@@ -248,11 +250,11 @@ def plot_cdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
             print(f"{target} - res power law - xmin, alpha : {res_fit.power_law.xmin}, {res_fit.power_law.alpha}")
             print(f"{target} - res lognormal - mu, sigma : {res_fit.lognormal.mu}, {res_fit.lognormal.sigma}")
 
-            axs[0, 0].set_title('Raw values')
-            axs[0, 1].set_title('Deseasonlized values')
+            axs[0, 0].set_title('Raw')
+            axs[0, 1].set_title('Deseasonlized')
 
             # disable y label on right side plot
-            axs[rowi, 0].set_ylabel(f"CDF of " + rf"${TARGET_MAP[target]}$")
+            axs[rowi, 0].set_ylabel(f"CDF - " + rf"${TARGET_MAP[target]}$")
             axs[rowi, 1].yaxis.label.set_visible(False)
 
             # remove legend title
@@ -263,13 +265,15 @@ def plot_cdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
                 axs[rowi, coli].set_xlabel('')
                 axs[rowi, coli].set_xscale('linear')
                 axs[rowi, coli].set_yscale('linear')
+                axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
+                                fontsize='medium', fontweight='bold')
 
                 # small yticks
                 for tick in axs[rowi, coli].yaxis.get_major_ticks():
                     tick.label.set_fontsize('x-small')
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
                     tick.label.set_fontsize('x-small')
-            
+
         fig.tight_layout()
         output_prefix = f'{station_name}_cdf'
         png_path = output_dir / (output_prefix + '.png')
@@ -300,7 +304,7 @@ def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
     multipanellabel_position = (-0.08, 1.02)
 
     # rough figure size
-    w_pad, h_pad = 0.1, 0.30
+    w_pad, h_pad = 0.2, 0.30
     # inch/1pt (=1.0inch / 72pt) * 10pt/row * 8row (6 row + margins)
     # ax_size = min(7.22 / ncols, 9.45 / nrows)
     ax_size = min(7.22 / ncols, 9.45 / nrows)
@@ -340,8 +344,8 @@ def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
             df_raw = dataset.ys_raw
             df_res = dataset.ys
 
-            arr_raw = df_raw[target].to_numpy() 
-            arr_res = df_res[target].to_numpy() 
+            arr_raw = df_raw[target].to_numpy()
+            arr_res = df_res[target].to_numpy()
             dist_raw = np.random.normal(np.mean(arr_raw), np.std(arr_raw), len(arr_raw))
             dist_res = np.random.normal(np.mean(arr_res), np.std(arr_res), len(arr_res))
             df_plot_raw = pd.DataFrame.from_dict({target: arr_raw, 'gaussian': dist_raw})
@@ -373,11 +377,11 @@ def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
             axs[rowi, 0].set_ylim(None, raw_ymax + raw_ymin)
             axs[rowi, 1].set_ylim(None, res_ymax + res_ymin)
 
-            axs[0, 0].set_title('Raw values')
-            axs[0, 1].set_title('Deseasonlized values')
+            axs[0, 0].set_title('Raw')
+            axs[0, 1].set_title('Deseasonlized')
 
             # disable y label on right side plot
-            axs[rowi, 0].set_ylabel(f"PDF of " + rf"${TARGET_MAP[target]}$")
+            axs[rowi, 0].set_ylabel(f"PDF - " + rf"${TARGET_MAP[target]}$")
             axs[rowi, 1].yaxis.label.set_visible(False)
 
             # remove legend title
@@ -388,14 +392,16 @@ def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
                 axs[rowi, coli].set_xlabel('')
                 axs[rowi, coli].set_xscale('linear')
                 axs[rowi, coli].set_yscale('linear')
-                axs[rowi, coli].set_major_formatter(mticker.FormatStrFormatter('%.2E'))
+                axs[rowi, coli].yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1E'))
+                axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.03, 1.05), xycoords='axes fraction',
+                                fontsize='medium', fontweight='bold')
 
                 # small yticks
                 for tick in axs[rowi, coli].yaxis.get_major_ticks():
                     tick.label.set_fontsize('x-small')
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
                     tick.label.set_fontsize('x-small')
-            
+
         fig.tight_layout()
         output_prefix = f'{station_name}_pdf'
         png_path = output_dir / (output_prefix + '.png')
@@ -410,8 +416,8 @@ if __name__ == '__main__':
         help="plot CDF")
     parser.add_argument("-p", "--pdf", nargs='*',
         help="plot PDF")
-    parser.add_argument("-w", "--power", nargs='*',
-        help="plot Power Law")
+    parser.add_argument("-d", "--ccdf", nargs='*',
+        help="plot CCDF")
 
     args = vars(parser.parse_args())
 
@@ -422,8 +428,8 @@ if __name__ == '__main__':
     if args["pdf"] != None:
         plot_pdf(targets=targets, sample_size=48, output_size=24)
 
-    if args["power"] != None:
-        plot_powerlaw(targets=targets, sample_size=48, output_size=24)
+    if args["ccdf"] != None:
+        plot_ccdf(targets=targets, sample_size=48, output_size=24)
 
 
 
