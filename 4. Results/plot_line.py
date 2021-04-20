@@ -115,7 +115,7 @@ def plot_line_dates(input_dir, output_dir, cases,
         (dt.datetime(2020, 1, 1, 1).astimezone(SEOULTZ), dt.datetime(2020, 3, 31, 23).astimezone(SEOULTZ)),
         (dt.datetime(2020, 4, 1, 0).astimezone(SEOULTZ), dt.datetime(2020, 6, 30, 23).astimezone(SEOULTZ)),
         (dt.datetime(2020, 7, 1, 0).astimezone(SEOULTZ), dt.datetime(2020, 9, 30, 23).astimezone(SEOULTZ))]
-    
+
     print("Plot Partial Dates...")
     # create another directory
     output_dir2 = output_dir / 'dates'
@@ -158,8 +158,8 @@ def plot_line_dates(input_dir, output_dir, cases,
 
             rowi, coli = divmod(ci, 4)
 
-            axs[rowi, coli].plot(dates, obs, color="tab:blue", linewidth=0.5, alpha=0.7, label="obs")
-            axs[rowi, coli].plot(dates, sim, color="tab:orange", linewidth=0.5, alpha=0.7, label="sim")
+            axs[rowi, coli].plot(dates, obs, color="tab:blue", linewidth=1.0, alpha=0.8, label="obs")
+            axs[rowi, coli].plot(dates, sim, color="tab:orange", linewidth=1.0, alpha=0.8, label="sim")
 
             axs[rowi, coli].set_title(CASE_DICT[case], {
                 'fontsize': 'small'
@@ -169,6 +169,8 @@ def plot_line_dates(input_dir, output_dir, cases,
             axs[rowi, coli].xaxis.set_major_formatter(
                 mdates.DateFormatter('%Y/%m', tz=SEOULTZ))
 
+            axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
+                                fontsize='medium', fontweight='bold')
             axs[rowi, coli].set_ylim([0.0, maxval])
             if rowi == 0:
                 axs[rowi, coli].set_xlabel('')
@@ -194,7 +196,7 @@ def plot_line_dates(input_dir, output_dir, cases,
         plt.savefig(png_path, dpi=600)
         plt.savefig(svg_path)
         plt.close(fig)
-    
+
 def plot_line(input_dir, output_dir, cases,
     station_name='종로구', target='PM10', output_size=24):
     nrows = 2
@@ -249,6 +251,8 @@ def plot_line(input_dir, output_dir, cases,
             axs[rowi, coli].plot(dates, sim, color="tab:orange", linewidth=0.3, alpha=0.7, label="sim")
             axs[rowi, coli].legend()
 
+            axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
+                                fontsize='medium', fontweight='bold')
             axs[rowi, coli].set_title(CASE_DICT[case], {
                 'fontsize': 'small'
             })
@@ -286,10 +290,10 @@ def plot_line_mse(plot_dates, station_name='종로구', target='PM10', sample_si
 
     output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'line_mse'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
-    if sample_size == 72:
-        input_dir = MSE_RESDIR_72
-    else:
+    if sample_size == 48:
         input_dir = MSE_RESDIR
+    else:
+        input_dir = MSE_RESDIR_72
 
     if plot_dates:
         plot_line_dates(input_dir, output_dir, cases,
@@ -306,10 +310,10 @@ def plot_line_mccr(plot_dates, station_name='종로구',  target='PM10', sample_
 
     output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'line_mccr'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
-    if sample_size == 72:
-        input_dir = MCCR_RESDIR_72
-    else:
+    if sample_size == 48:
         input_dir = MCCR_RESDIR
+    else:
+        input_dir = MCCR_RESDIR_72
 
     if plot_dates:
         plot_line_dates(input_dir, output_dir, cases,
@@ -322,24 +326,32 @@ def plot_line_mccr(plot_dates, station_name='종로구',  target='PM10', sample_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--mccr", nargs='*',
-        help="plot MCCR")
-    parser.add_argument("-s", "--mse", nargs='*',
-        help="plot MSE")
+    parser.add_argument("-m", "--method", required=True, nargs=1,
+        default='mse', help="set method")
+    parser.add_argument("-s", "--sample", nargs=1,
+        type=int, default=48, help="sample size")
+    parser.add_argument("-d", "--dates", action='store_true',
+        help="plot dates")
 
     args = vars(parser.parse_args())
 
     targets = ['PM10', 'PM25']
     # targets = ['PM25']
-    plot_dates = True
-    # machine learning
-    if args["mccr"] != None:
-        for target in targets:
-            plot_line_mccr(plot_dates, station_name='종로구', target=target, sample_size=72, output_size=24)
+    sample_size = int(args["sample"][0])
+    plot_dates = False
+    if args["dates"]:
+        plot_dates = True
+    else:
+        plot_dates = False
 
-    if args["mse"] != None:
+    # machine learning
+    if args["method"] == 'mse':
         for target in targets:
-            plot_line_mse(plot_dates, station_name='종로구', target=target, sample_size=72, output_size=24)
+            plot_line_mse(plot_dates, station_name='종로구', target=target, sample_size=sample_size, output_size=24)
+    else:
+        for target in targets:
+            plot_line_mccr(plot_dates, station_name='종로구', target=target, sample_size=sample_size, output_size=24)
+        
 
 
 

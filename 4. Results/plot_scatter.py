@@ -136,17 +136,19 @@ def plot_scatter(input_dir, output_dir, cases,
             sim = df_sim[str(t)].to_numpy()
             maxval = np.nanmax([np.nanmax(obs), np.nanmax(sim)])
             xs = np.array(list(range(round(maxval))))
-            best_fit = np.polyfit(obs, sim, 1) 
+            best_fit = np.polyfit(obs, sim, 1)
 
             rowi, coli = divmod(ci, 4)
 
-            axs[rowi, coli].scatter(obs, sim, color="tab:blue", alpha=0.8, s=(5.0,))
+            axs[rowi, coli].scatter(obs, sim, color="tab:blue", alpha=0.8, s=(4.0,))
             # base line
             axs[rowi, coli].plot(xs, xs, color="black", alpha=0.7, linewidth=1)
             # best fit line
             axs[rowi, coli].plot(xs, xs * best_fit[0] + best_fit[1], color="tab:orange", alpha=0.7, linewidth=1.5)
             axs[rowi, coli].set_aspect(1.0)
 
+            axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
+                                fontsize='medium', fontweight='bold')
             axs[rowi, coli].set_title(CASE_DICT[case], {
                 'fontsize': 'small'
             })
@@ -162,7 +164,7 @@ def plot_scatter(input_dir, output_dir, cases,
                 axs[rowi, coli].set_ylabel('predicted')
             else:
                 axs[rowi, coli].set_ylabel('')
-            
+
             for tick in axs[rowi, coli].xaxis.get_major_ticks():
                 tick.label.set_fontsize('x-small')
             for tick in axs[rowi, coli].yaxis.get_major_ticks():
@@ -208,22 +210,24 @@ def plot_scatter_mccr(station_name='종로구',  target='PM10',  sample_size=48,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--mccr", nargs='*',
-        help="plot MCCR")
-    parser.add_argument("-s", "--mse", nargs='*',
-        help="plot MSE")
+    parser.add_argument("-m", "--method", required=True, nargs=1,
+        default='mse', help="set method")
+    parser.add_argument("-s", "--samplesize", nargs=1,
+        type=int, default=48, help="sample size")
 
     args = vars(parser.parse_args())
 
     targets = ['PM10', 'PM25']
-    # machine learning
-    if args["mccr"] != None:
-        for target in targets:
-            plot_scatter_mccr(station_name='종로구', target=target, sample_size=72, output_size=24)
+    sample_size = int(args["samplesize"][0])
 
-    if args["mse"] != None:
+    # machine learning
+    if args["method"] == 'mse':
         for target in targets:
-            plot_scatter_mse(station_name='종로구', target=target, sample_size=72, output_size=24)
+            plot_scatter_mse(station_name='종로구', target=target, sample_size=sample_size, output_size=24)
+    else:
+        for target in targets:
+            plot_scatter_mccr(station_name='종로구', target=target, sample_size=sample_size, output_size=24)
+        
 
 
 
