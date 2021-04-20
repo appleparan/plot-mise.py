@@ -36,6 +36,9 @@ plt.rcParams["mathtext.fontset"] = "stix"
 MCCR_RESDIR = SCRIPT_DIR / '..' / '..' / 'Figures_DATA_MCCR'
 MSE_RESDIR = SCRIPT_DIR / '..' / '..' / 'Figures_DATA_MSE'
 
+MCCR_RESDIR_72 = SCRIPT_DIR / '..' / '..' / 'Figures_DATA_MCCR_72'
+MSE_RESDIR_72 = SCRIPT_DIR / '..' / '..' / 'Figures_DATA_MSE_72'
+
 SEOULTZ = pytz.timezone('Asia/Seoul')
 
 TARGET_MAP = {
@@ -88,8 +91,8 @@ def get_df(data_path):
 
     return df_obs, df_sim
 
-def plot_line(input_dir, output_dir, cases,
-    station_name='종로구', target='PM10', output_size=24, plot_dates=False):
+def plot_line_dates(input_dir, output_dir, cases,
+    station_name='종로구', target='PM10', output_size=24):
     nrows = 2
     ncols = 4
     multipanel_labels = np.array(list(string.ascii_uppercase)[:(nrows*ncols)]).reshape(nrows, ncols)
@@ -112,183 +115,210 @@ def plot_line(input_dir, output_dir, cases,
         (dt.datetime(2020, 1, 1, 1).astimezone(SEOULTZ), dt.datetime(2020, 3, 31, 23).astimezone(SEOULTZ)),
         (dt.datetime(2020, 4, 1, 0).astimezone(SEOULTZ), dt.datetime(2020, 6, 30, 23).astimezone(SEOULTZ)),
         (dt.datetime(2020, 7, 1, 0).astimezone(SEOULTZ), dt.datetime(2020, 9, 30, 23).astimezone(SEOULTZ))]
+    
+    print("Plot Partial Dates...")
+    # create another directory
+    output_dir2 = output_dir / 'dates'
+    Path.mkdir(output_dir2, parents=True, exist_ok=True)
+    # splitted plot
+    for dr, t in itertools.product(plot_dates, range(output_size)):
+        # plot
+        fig, ax = plt.subplots(figsize=(7, 7))
+
+        fig, axs = plt.subplots(nrows, ncols,
+            figsize=(ax_size*ncols, ax_size*nrows),
+            dpi=600,
+            frameon=False,
+            subplot_kw={
+                'clip_on': False,
+                'box_aspect': 1
+            })
+
+        # keep right distance between subplots
+        fig.tight_layout(w_pad=w_pad, h_pad=h_pad)
+        fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
+
+        for ci, case in enumerate(cases):
+            if len(case) == 0:
+                continue
+            print(t, case, dr[0], dr[1])
+
+            data_path = input_dir / case / station_name / target / 'csv'
+            df_obs, df_sim = get_df(data_path)
+
+            # filter by date
+            df_obs = df_obs[dr[0]:dr[1]]
+            df_sim = df_sim[dr[0]:dr[1]]
+
+            dates = df_obs.index + dt.timedelta(hours=t)
+
+            obs = df_obs.loc[:, str(t)].to_numpy()
+            sim = df_sim.loc[:, str(t)].to_numpy()
+            maxval = np.nanmax([np.nanmax(obs), np.nanmax(sim)])
+
+            rowi, coli = divmod(ci, 4)
+
+            axs[rowi, coli].plot(dates, obs, color="tab:blue", linewidth=0.5, alpha=0.7, label="obs")
+            axs[rowi, coli].plot(dates, sim, color="tab:orange", linewidth=0.5, alpha=0.7, label="sim")
+
+            axs[rowi, coli].set_title(CASE_DICT[case], {
+                'fontsize': 'small'
+            })
+            axs[rowi, coli].xaxis.set_major_locator(
+                mdates.MonthLocator(interval=1, tz=SEOULTZ))
+            axs[rowi, coli].xaxis.set_major_formatter(
+                mdates.DateFormatter('%Y/%m', tz=SEOULTZ))
+
+            axs[rowi, coli].set_ylim([0.0, maxval])
+            if rowi == 0:
+                axs[rowi, coli].set_xlabel('')
+            else:
+                axs[rowi, coli].set_xlabel('date')
+
+            if coli == 0:
+                axs[rowi, coli].set_ylabel(r'$' + TARGET_MAP[target] + r'$')
+            else:
+                axs[rowi, coli].set_ylabel('')
+
+            for tick in axs[rowi, coli].xaxis.get_major_ticks():
+                tick.label.set_fontsize('xx-small')
+            for tick in axs[rowi, coli].yaxis.get_major_ticks():
+                tick.label.set_fontsize('x-small')
+
+        fig.tight_layout()
+        dr_fdate_str = dr[0].strftime("%Y%m%d%H")
+        dr_tdate_str = dr[1].strftime("%Y%m%d%H")
+        output_prefix = f'{station_name}_{target}_line_{dr_fdate_str}_{dr_tdate_str}_{str(t + 1).zfill(2)}'
+        png_path = output_dir2 / (output_prefix + '.png')
+        svg_path = output_dir2 / (output_prefix + '.svg')
+        plt.savefig(png_path, dpi=600)
+        plt.savefig(svg_path)
+        plt.close(fig)
+    
+def plot_line(input_dir, output_dir, cases,
+    station_name='종로구', target='PM10', output_size=24):
+    nrows = 2
+    ncols = 4
+    multipanel_labels = np.array(list(string.ascii_uppercase)[:(nrows*ncols)]).reshape(nrows, ncols)
+    multipanellabel_position = (-0.08, 1.02)
+
+    # rough figure size
+    w_pad, h_pad = 0.1, 0.30
+    # inch/1pt (=1.0inch / 72pt) * 10pt/row * 8row (6 row + margins)
+    # ax_size = min(7.22 / ncols, 9.45 / nrows)
+    ax_size = min(14.44 / ncols, 9.45 / nrows)
+    # legend_size = 0.6 * fig_size
+    fig_size_w = ax_size*ncols
+    fig_size_h = ax_size*nrows
 
     print("Plot Whole Dates...")
-    if plot_dates == False:
-        # total_plot
-        for t in range(output_size):
-            print(t)
-            # plot
-            fig, ax = plt.subplots(figsize=(7, 7))
+    # total_plot
+    for t in range(output_size):
+        print(t)
+        # plot
+        fig, ax = plt.subplots(figsize=(7, 7))
 
-            fig, axs = plt.subplots(nrows, ncols,
-                figsize=(ax_size*ncols, ax_size*nrows),
-                dpi=600,
-                frameon=False,
-                subplot_kw={
-                    'clip_on': False,
-                    'box_aspect': 1
-                })
+        fig, axs = plt.subplots(nrows, ncols,
+            figsize=(ax_size*ncols, ax_size*nrows),
+            dpi=600,
+            frameon=False,
+            subplot_kw={
+                'clip_on': False,
+                'box_aspect': 1
+            })
 
-            # keep right distance between subplots
-            fig.tight_layout(w_pad=w_pad, h_pad=h_pad)
-            fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
+        # keep right distance between subplots
+        fig.tight_layout(w_pad=w_pad, h_pad=h_pad)
+        fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
 
-            for ci, case in enumerate(cases):
-                if len(case) == 0:
-                    continue
+        for ci, case in enumerate(cases):
+            if len(case) == 0:
+                continue
 
-                data_path = input_dir / case / station_name / target / 'csv'
-                df_obs, df_sim = get_df(data_path)
-                dates = df_obs.index + dt.timedelta(hours=t)
+            data_path = input_dir / case / station_name / target / 'csv'
+            df_obs, df_sim = get_df(data_path)
+            dates = df_obs.index + dt.timedelta(hours=t)
 
-                obs = df_obs[str(t)].to_numpy()
-                sim = df_sim[str(t)].to_numpy()
-                maxval = np.nanmax([np.nanmax(obs), np.nanmax(sim)])
+            obs = df_obs[str(t)].to_numpy()
+            sim = df_sim[str(t)].to_numpy()
+            maxval = np.nanmax([np.nanmax(obs), np.nanmax(sim)])
 
-                rowi, coli = divmod(ci, 4)
+            rowi, coli = divmod(ci, 4)
 
-                axs[rowi, coli].plot(dates, obs, color="tab:blue", linewidth=0.3, alpha=0.7, label="obs")
-                axs[rowi, coli].plot(dates, sim, color="tab:orange", linewidth=0.3, alpha=0.7, label="sim")
-                axs[rowi, coli].legend()
+            axs[rowi, coli].plot(dates, obs, color="tab:blue", linewidth=0.3, alpha=0.7, label="obs")
+            axs[rowi, coli].plot(dates, sim, color="tab:orange", linewidth=0.3, alpha=0.7, label="sim")
+            axs[rowi, coli].legend()
 
-                axs[rowi, coli].set_title(CASE_DICT[case], {
-                    'fontsize': 'small'
-                })
-                axs[rowi, coli].xaxis.set_major_locator(
-                    mdates.MonthLocator(interval=4, tz=SEOULTZ))
-                axs[rowi, coli].xaxis.set_major_formatter(
-                    mdates.DateFormatter('%Y/%m', tz=SEOULTZ))
+            axs[rowi, coli].set_title(CASE_DICT[case], {
+                'fontsize': 'small'
+            })
+            axs[rowi, coli].xaxis.set_major_locator(
+                mdates.MonthLocator(interval=4, tz=SEOULTZ))
+            axs[rowi, coli].xaxis.set_major_formatter(
+                mdates.DateFormatter('%Y/%m', tz=SEOULTZ))
 
-                axs[rowi, coli].set_ylim([0.0, maxval])
-                if rowi == 0:
-                    axs[rowi, coli].set_xlabel('')
-                else:
-                    axs[rowi, coli].set_xlabel('date')
+            axs[rowi, coli].set_ylim([0.0, maxval])
+            if rowi == 0:
+                axs[rowi, coli].set_xlabel('')
+            else:
+                axs[rowi, coli].set_xlabel('date')
 
-                if coli == 0:
-                    axs[rowi, coli].set_ylabel(r'$' + TARGET_MAP[target] + r'$')
-                else:
-                    axs[rowi, coli].set_ylabel('')
+            if coli == 0:
+                axs[rowi, coli].set_ylabel(r'$' + TARGET_MAP[target] + r'$')
+            else:
+                axs[rowi, coli].set_ylabel('')
 
-                for tick in axs[rowi, coli].xaxis.get_major_ticks():
-                    tick.label.set_fontsize('xx-small')
-                for tick in axs[rowi, coli].yaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
-            fig.tight_layout()
-            output_prefix = f'{station_name}_{target}_line_{str(t).zfill(2)}'
-            png_path = output_dir / (output_prefix + '.png')
-            svg_path = output_dir / (output_prefix + '.svg')
-            plt.savefig(png_path, dpi=600)
-            plt.savefig(svg_path)
-            plt.close(fig)
+            for tick in axs[rowi, coli].xaxis.get_major_ticks():
+                tick.label.set_fontsize('xx-small')
+            for tick in axs[rowi, coli].yaxis.get_major_ticks():
+                tick.label.set_fontsize('x-small')
+        fig.tight_layout()
+        output_prefix = f'{station_name}_{target}_line_{str(t + 1).zfill(2)}'
+        png_path = output_dir / (output_prefix + '.png')
+        svg_path = output_dir / (output_prefix + '.svg')
+        plt.savefig(png_path, dpi=600)
+        plt.savefig(svg_path)
+        plt.close(fig)
 
-    if plot_dates:
-        print("Plot Partial Dates...")
-        # create another directory
-        output_dir2 = output_dir / 'dates'
-        Path.mkdir(output_dir2, parents=True, exist_ok=True)
-        # splitted plot
-        for dr, t in zip(plot_dates, range(output_size)):
-            # plot
-            fig, ax = plt.subplots(figsize=(7, 7))
-
-            fig, axs = plt.subplots(nrows, ncols,
-                figsize=(ax_size*ncols, ax_size*nrows),
-                dpi=600,
-                frameon=False,
-                subplot_kw={
-                    'clip_on': False,
-                    'box_aspect': 1
-                })
-
-            # keep right distance between subplots
-            fig.tight_layout(w_pad=w_pad, h_pad=h_pad)
-            fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
-
-            for ci, case in enumerate(cases):
-                if len(case) == 0:
-                    continue
-                print(t, case, dr[0], dr[1])
-
-                data_path = input_dir / case / station_name / target / 'csv'
-                df_obs, df_sim = get_df(data_path)
-
-                # filter by date
-                df_obs = df_obs[dr[0]:dr[1]]
-                df_sim = df_sim[dr[0]:dr[1]]
-
-                dates = df_obs.index + dt.timedelta(hours=t)
-
-                obs = df_obs.loc[:, str(t)].to_numpy()
-                sim = df_sim.loc[:, str(t)].to_numpy()
-                maxval = np.nanmax([np.nanmax(obs), np.nanmax(sim)])
-
-                rowi, coli = divmod(ci, 4)
-
-                axs[rowi, coli].plot(dates, obs, color="tab:blue", linewidth=0.3, alpha=0.7, label="obs")
-                axs[rowi, coli].plot(dates, sim, color="tab:orange", linewidth=0.3, alpha=0.7, label="sim")
-
-                axs[rowi, coli].set_title(CASE_DICT[case], {
-                    'fontsize': 'small'
-                })
-                axs[rowi, coli].xaxis.set_major_locator(
-                    mdates.MonthLocator(interval=1, tz=SEOULTZ))
-                axs[rowi, coli].xaxis.set_major_formatter(
-                    mdates.DateFormatter('%Y/%m', tz=SEOULTZ))
-
-                axs[rowi, coli].set_ylim([0.0, maxval])
-                if rowi == 0:
-                    axs[rowi, coli].set_xlabel('')
-                else:
-                    axs[rowi, coli].set_xlabel('date')
-
-                if coli == 0:
-                    axs[rowi, coli].set_ylabel(r'$' + TARGET_MAP[target] + r'$')
-                else:
-                    axs[rowi, coli].set_ylabel('')
-
-                for tick in axs[rowi, coli].xaxis.get_major_ticks():
-                    tick.label.set_fontsize('xx-small')
-                for tick in axs[rowi, coli].yaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
-
-            fig.tight_layout()
-            dr_fdate_str = dr[0].strftime("%Y%m%d%H")
-            dr_fdate_str = dr[1].strftime("%Y%m%d%H")
-            output_prefix = f'{station_name}_{target}_line_{dr_fdate_str}_{dr_tdate_str}_{str(t).zfill(2)}'
-            png_path = output_dir2 / (output_prefix + '.png')
-            svg_path = output_dir2 / (output_prefix + '.svg')
-            plt.savefig(png_path, dpi=600)
-            plt.savefig(svg_path)
-            plt.close(fig)
-
-def plot_line_mse(station_name='종로구', target='PM10', output_size=24, plot_dates=False):
-
+def plot_line_mse(plot_dates, station_name='종로구', target='PM10', sample_size=48, output_size=24):
     cases = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
         'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
 
-    output_dir = SCRIPT_DIR / 'out' / 'line_mse'
+    output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'line_mse'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
+    if sample_size == 72:
+        input_dir = MSE_RESDIR_72
+    else:
+        input_dir = MSE_RESDIR
 
-    plot_line(MSE_RESDIR, output_dir, cases,
-        station_name=station_name, target=target,
-        output_size=output_size, plot_dates=plot_dates)
+    if plot_dates:
+        plot_line_dates(input_dir, output_dir, cases,
+            station_name=station_name, target=target,
+            output_size=output_size)
+    else:
+        plot_line(input_dir, output_dir, cases,
+            station_name=station_name, target=target,
+            output_size=output_size)
 
-def plot_line_mccr(station_name='종로구',  target='PM10', output_size=24, plot_dates=False):
+def plot_line_mccr(plot_dates, station_name='종로구',  target='PM10', sample_size=48, output_size=24):
     cases = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate',
         'XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
 
-    # Because univariate models are not ready, skip
-    cases = ['OU', 'ARIMA_(2, 0, 0)', '', '',
-        'XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
-
-    output_dir = SCRIPT_DIR / 'out' / 'line_mccr'
+    output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'line_mccr'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
+    if sample_size == 72:
+        input_dir = MCCR_RESDIR_72
+    else:
+        input_dir = MCCR_RESDIR
 
-    plot_line(MCCR_RESDIR, output_dir, cases,
-        station_name=station_name, target=target,
-        output_size=output_size, plot_dates=plot_dates)
+    if plot_dates:
+        plot_line_dates(input_dir, output_dir, cases,
+            station_name=station_name, target=target,
+            output_size=output_size)
+    else:
+        plot_line(input_dir, output_dir, cases,
+            station_name=station_name, target=target,
+            output_size=output_size)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -300,14 +330,16 @@ if __name__ == '__main__':
     args = vars(parser.parse_args())
 
     targets = ['PM10', 'PM25']
+    # targets = ['PM25']
+    plot_dates = True
     # machine learning
     if args["mccr"] != None:
         for target in targets:
-            plot_line_mccr(station_name='종로구', target=target, output_size=24, plot_dates=True)
+            plot_line_mccr(plot_dates, station_name='종로구', target=target, sample_size=72, output_size=24)
 
     if args["mse"] != None:
         for target in targets:
-            plot_line_mse(station_name='종로구', target=target, output_size=24, plot_dates=True)
+            plot_line_mse(plot_dates, station_name='종로구', target=target, sample_size=72, output_size=24)
 
 
 

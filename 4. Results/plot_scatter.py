@@ -36,6 +36,9 @@ plt.rcParams["mathtext.fontset"] = "stix"
 MCCR_RESDIR = SCRIPT_DIR / '..' / '..' / 'Figures_DATA_MCCR'
 MSE_RESDIR = SCRIPT_DIR / '..' / '..' / 'Figures_DATA_MSE'
 
+MCCR_RESDIR_72 = SCRIPT_DIR / '..' / '..' / 'Figures_DATA_MCCR_72'
+MSE_RESDIR_72 = SCRIPT_DIR / '..' / '..' / 'Figures_DATA_MSE_72'
+
 SEOULTZ = pytz.timezone('Asia/Seoul')
 
 TARGET_MAP = {
@@ -109,8 +112,6 @@ def plot_scatter(input_dir, output_dir, cases,
     for t in range(output_size):
         print(t)
         # plot
-        fig, ax = plt.subplots(figsize=(7, 7))
-
         fig, axs = plt.subplots(nrows, ncols,
             figsize=(ax_size*ncols, ax_size*nrows),
             dpi=600,
@@ -168,36 +169,40 @@ def plot_scatter(input_dir, output_dir, cases,
                 tick.label.set_fontsize('x-small')
 
         fig.tight_layout()
-        output_prefix = f'{station_name}_{target}_scatter_{str(t).zfill(2)}'
+        output_prefix = f'{station_name}_{target}_scatter_{str(t + 1).zfill(2)}'
         png_path = output_dir / (output_prefix + '.png')
         svg_path = output_dir / (output_prefix + '.svg')
         plt.savefig(png_path, dpi=600)
         plt.savefig(svg_path)
         plt.close(fig)
 
-def plot_scatter_mse(station_name='종로구', target='PM10', output_size=24):
+def plot_scatter_mse(station_name='종로구', target='PM10', sample_size=48, output_size=24):
     cases = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
         'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
 
-    output_dir = SCRIPT_DIR / 'out' / 'scatter_mse'
+    output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'scatter_mse'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
+    if sample_size == 72:
+        input_dir = MSE_RESDIR_72
+    else:
+        input_dir = MSE_RESDIR
 
-    plot_scatter(MSE_RESDIR, output_dir, cases,
+    plot_scatter(input_dir, output_dir, cases,
         station_name=station_name, target=target,
         output_size=output_size)
 
-def plot_scatter_mccr(station_name='종로구',  target='PM10', output_size=24):
+def plot_scatter_mccr(station_name='종로구',  target='PM10',  sample_size=48, output_size=24):
     cases = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate',
         'XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
 
-    # Because univariate models are not ready, skip
-    cases = ['OU', 'ARIMA_(2, 0, 0)', '', '',
-        'XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
-
-    output_dir = SCRIPT_DIR / 'out' / 'scatter_mccr'
+    output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'scatter_mccr'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
+    if sample_size == 72:
+        input_dir = MCCR_RESDIR_72
+    else:
+        input_dir = MCCR_RESDIR
 
-    plot_scatter(MCCR_RESDIR, output_dir, cases,
+    plot_scatter(input_dir, output_dir, cases,
         station_name=station_name, target=target,
         output_size=output_size)
 
@@ -214,13 +219,14 @@ if __name__ == '__main__':
     # machine learning
     if args["mccr"] != None:
         for target in targets:
-            plot_scatter_mccr(station_name='종로구', target=target, output_size=24)
+            plot_scatter_mccr(station_name='종로구', target=target, sample_size=72, output_size=24)
 
     if args["mse"] != None:
         for target in targets:
-            plot_scatter_mse(station_name='종로구', target=target, output_size=24)
+            plot_scatter_mse(station_name='종로구', target=target, sample_size=72, output_size=24)
 
 
 
 
 
+7
