@@ -156,9 +156,9 @@ def plot_ccdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
                                 fontsize='medium', fontweight='bold')
                 # small yticks
                 for tick in axs[rowi, coli].yaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
+                    tick.label.set_fontsize('small')
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
+                    tick.label.set_fontsize('small')
 
         fig.tight_layout()
         output_prefix = f'{station_name}_ccdf'
@@ -270,9 +270,9 @@ def plot_cdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
 
                 # small yticks
                 for tick in axs[rowi, coli].yaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
+                    tick.label.set_fontsize('small')
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
+                    tick.label.set_fontsize('small')
 
         fig.tight_layout()
         output_prefix = f'{station_name}_cdf'
@@ -398,9 +398,9 @@ def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
 
                 # small yticks
                 for tick in axs[rowi, coli].yaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
+                    tick.label.set_fontsize('small')
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
+                    tick.label.set_fontsize('small')
 
         fig.tight_layout()
         output_prefix = f'{station_name}_pdf'
