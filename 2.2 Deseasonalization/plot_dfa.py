@@ -210,8 +210,8 @@ def plot():
                 axs[rowi, 0].set_xlabel(r'$s$')
                 axs[rowi, 1].set_xlabel(r'$s$')
             else:
-                axs[rowi, 0].set_xlabel('', fontsize='small')
-                axs[rowi, 1].set_xlabel('', fontsize='small')
+                axs[rowi, 0].set_xlabel('', fontsize='medium')
+                axs[rowi, 1].set_xlabel('', fontsize='medium')
         
         x_mins = np.zeros((len(targets), 2))
         x_maxs = np.zeros((len(targets), 2))

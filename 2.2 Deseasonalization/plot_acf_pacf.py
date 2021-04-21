@@ -88,10 +88,10 @@ def plot():
     multipanellabel_position = (-0.08, 1.02)
 
     # rough figure size
-    w_pad, h_pad = 0.1, 0.30
+    w_pad, h_pad = 0.3, 0.30
     # inch/1pt (=1.0inch / 72pt) * 10pt/row * 8row (6 row + margins)
     # ax_size = min(7.22 / ncols, 9.45 / nrows)
-    ax_size = min(7.22 / ncols, 9.45 / nrows)
+    ax_size = min(14.44 / ncols, 7.22 / nrows)
     # legend_size = 0.6 * fig_size
     fig_size_w = ax_size*ncols
     fig_size_h = ax_size*nrows
@@ -136,7 +136,7 @@ def plot():
             tpl.plot_acf(df_res[target], ax=axs[rowi, 2], fft=True, lags=nlags*24,
                          use_vlines=False, marker=None, linestyle='solid', linewidth=1)
 
-            axs[rowi, 0].set_ylabel(r'$C(s)$ $\mathrm{{({0:s})}}$'.format(TARGET_MAP[target]), fontsize='small')
+            axs[rowi, 0].set_ylabel(r'$C(s)$ $\mathrm{{({0:s})}}$'.format(TARGET_MAP[target]), fontsize='large')
 
             tpl.plot_pacf(df_raw[target], ax=axs[rowi, 1], lags=12,
                           use_vlines=True, markersize=2)
@@ -145,7 +145,7 @@ def plot():
 
             if rowi == nrows-1:
                 for coli in range(ncols):
-                    axs[rowi, coli].set_xlabel(r'lag $s$ (hour)', fontsize='small')
+                    axs[rowi, coli].set_xlabel(r'lag $s$ (hour)', fontsize='large')
 
             # ACF
             axs[rowi, 0].xaxis.set_major_locator(mticker.MultipleLocator(24))
@@ -157,12 +157,12 @@ def plot():
                 axs[rowi, coli].set_title("")
                 axs[rowi, coli].yaxis.set_major_locator(mticker.MultipleLocator(0.2))
                 axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.13, 1.05), xycoords='axes fraction',
-                                fontsize='medium', fontweight='bold')
+                                fontsize='large', fontweight='bold')
 
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
+                    tick.label.set_fontsize('medium')
                 for tick in axs[rowi, coli].yaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
+                    tick.label.set_fontsize('medium')
 
             # dataset.plot_seasonality(plot_data_dir / target, plot_png_dir / target, plot_svg_dir / target)
 
