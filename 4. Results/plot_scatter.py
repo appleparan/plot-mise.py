@@ -107,7 +107,7 @@ def plot_scatter(input_dir, output_dir, cases,
     fig_size_w = ax_size*ncols
     fig_size_h = ax_size*nrows
 
-    print("Plot Scatter")
+    print(f"Plot {target} scatter plot..")
     # total_plot
     for t in range(output_size):
         print(t)
@@ -210,24 +210,34 @@ def plot_scatter_mccr(station_name='종로구',  target='PM10',  sample_size=48,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--method", required=True, nargs=1,
+    parser.add_argument("-m", "--method", required=True, nargs='?',
         default='mse', help="set method")
-    parser.add_argument("-s", "--samplesize", nargs=1,
+    parser.add_argument("-n", "--name", nargs='?',
+        type=str, default='종로구', help="station_name")
+    parser.add_argument("-t", "--targets", nargs='*',
+        type=str, default=['PM10', 'PM25'], help="targets")
+    parser.add_argument("-s", "--samples", nargs='?',
         type=int, default=48, help="sample size")
 
     args = vars(parser.parse_args())
 
-    targets = ['PM10', 'PM25']
-    sample_size = int(args["samplesize"][0])
+    if args['name']:
+        station_name = str(args['name'])
+    else:
+        station_name = '종로구'
+    if args['targets']:
+        targets = args['targets']
+    else:
+        targets = ['PM10', 'PM25']
+    sample_size = int(args["samples"])
 
-    # machine learning
     if args["method"] == 'mse':
         for target in targets:
-            plot_scatter_mse(station_name='종로구', target=target, sample_size=sample_size, output_size=24)
+            plot_scatter_mse(station_name=station_name, target=target, sample_size=sample_size, output_size=24)
     else:
         for target in targets:
-            plot_scatter_mccr(station_name='종로구', target=target, sample_size=sample_size, output_size=24)
-        
+            plot_scatter_mccr(station_name=station_name, target=target, sample_size=sample_size, output_size=24)
+
 
 
 

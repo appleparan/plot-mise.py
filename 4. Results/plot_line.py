@@ -116,15 +116,12 @@ def plot_line_dates(input_dir, output_dir, cases,
         (dt.datetime(2020, 4, 1, 0).astimezone(SEOULTZ), dt.datetime(2020, 6, 30, 23).astimezone(SEOULTZ)),
         (dt.datetime(2020, 7, 1, 0).astimezone(SEOULTZ), dt.datetime(2020, 9, 30, 23).astimezone(SEOULTZ))]
 
-    print("Plot Partial Dates...")
+    print(f"Plot {target} line plot for 3 months...")
     # create another directory
     output_dir2 = output_dir / 'dates'
     Path.mkdir(output_dir2, parents=True, exist_ok=True)
     # splitted plot
     for dr, t in itertools.product(plot_dates, range(output_size)):
-        # plot
-        fig, ax = plt.subplots(figsize=(7, 7))
-
         fig, axs = plt.subplots(nrows, ncols,
             figsize=(ax_size*ncols, ax_size*nrows),
             dpi=600,
@@ -213,7 +210,7 @@ def plot_line(input_dir, output_dir, cases,
     fig_size_w = ax_size*ncols
     fig_size_h = ax_size*nrows
 
-    print("Plot Whole Dates...")
+    print(f"Plot {target} line plot for total duration...")
     # total_plot
     for t in range(output_size):
         print(t)
@@ -326,32 +323,40 @@ def plot_line_mccr(plot_dates, station_name='종로구',  target='PM10', sample_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--method", required=True, nargs=1,
+    parser.add_argument("-m", "--method", required=True, nargs='?',
         default='mse', help="set method")
-    parser.add_argument("-s", "--sample", nargs=1,
-        type=int, default=48, help="sample size")
     parser.add_argument("-d", "--dates", action='store_true',
         help="plot dates")
+    parser.add_argument("-n", "--name", nargs='?',
+        type=str, default='종로구', help="station_name")
+    parser.add_argument("-t", "--targets", nargs='*',
+        type=str, default=['PM10', 'PM25'], help="targets")
+    parser.add_argument("-s", "--samples", nargs='?',
+        type=int, default=48, help="sample size")
 
     args = vars(parser.parse_args())
 
-    targets = ['PM10', 'PM25']
-    # targets = ['PM25']
-    sample_size = int(args["sample"][0])
-    plot_dates = False
     if args["dates"]:
         plot_dates = True
     else:
         plot_dates = False
+    if args['name']:
+        station_name = str(args['name'])
+    else:
+        station_name = '종로구'
+    if args['targets']:
+        targets = args['targets']
+    else:
+        targets = ['PM10', 'PM25']
+    sample_size = int(args["samples"])
 
-    # machine learning
     if args["method"] == 'mse':
         for target in targets:
-            plot_line_mse(plot_dates, station_name='종로구', target=target, sample_size=sample_size, output_size=24)
+            plot_line_mse(plot_dates, station_name=station_name, target=target, sample_size=sample_size, output_size=24)
     else:
         for target in targets:
-            plot_line_mccr(plot_dates, station_name='종로구', target=target, sample_size=sample_size, output_size=24)
-        
+            plot_line_mccr(plot_dates, station_name=station_name, target=target, sample_size=sample_size, output_size=24)
+
 
 
 
