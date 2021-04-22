@@ -63,6 +63,7 @@ TARGET_MAP = {
 CASE_DICT = {
     'OU' : 'OU',
     'ARIMA_(2, 0, 0)' : 'AR(2)',
+    'ARIMA_(3, 0, 0)' : 'AR(3)',
     'MLPMSUnivariate' : 'MLP (Univariate)',
     'RNNAttentionUnivariate' : 'Attention',
     'XGBoost' : 'XGBoost',
@@ -182,7 +183,9 @@ def plot_scatter(input_dir, output_dir, cases,
         plt.close(fig)
 
 def plot_scatter_mse(station_name='종로구', target='PM10', sample_size=48, output_size=24):
-    cases = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
+    cases_PM10 = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
+        'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
+    cases_PM25 = ['OU', 'ARIMA_(3, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
         'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
 
     output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'scatter_mse'
@@ -192,13 +195,20 @@ def plot_scatter_mse(station_name='종로구', target='PM10', sample_size=48, ou
     else:
         input_dir = MSE_RESDIR
 
+    if target == 'PM10':
+        cases = cases_PM10
+    else:
+        cases = cases_PM25
+
     plot_scatter(input_dir, output_dir, cases,
         station_name=station_name, target=target,
         output_size=output_size)
 
 def plot_scatter_mccr(station_name='종로구',  target='PM10',  sample_size=48, output_size=24):
-    cases = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate',
-        'XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
+    cases_PM10 = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
+        'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
+    cases_PM25 = ['OU', 'ARIMA_(3, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
+        'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
 
     output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'scatter_mccr'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
@@ -206,6 +216,11 @@ def plot_scatter_mccr(station_name='종로구',  target='PM10',  sample_size=48,
         input_dir = MCCR_RESDIR_72
     else:
         input_dir = MCCR_RESDIR
+
+    if target == 'PM10':
+        cases = cases_PM10
+    else:
+        cases = cases_PM25
 
     plot_scatter(input_dir, output_dir, cases,
         station_name=station_name, target=target,

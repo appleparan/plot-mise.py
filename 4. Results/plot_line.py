@@ -63,6 +63,7 @@ TARGET_MAP = {
 CASE_DICT = {
     'OU' : 'OU',
     'ARIMA_(2, 0, 0)' : 'AR(2)',
+    'ARIMA_(3, 0, 0)' : 'AR(3)',
     'MLPMSUnivariate' : 'MLP (Univariate)',
     'RNNAttentionUnivariate' : 'Attention',
     'XGBoost' : 'XGBoost',
@@ -282,7 +283,9 @@ def plot_line(input_dir, output_dir, cases,
         plt.close(fig)
 
 def plot_line_mse(plot_dates, station_name='종로구', target='PM10', sample_size=48, output_size=24):
-    cases = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
+    cases_PM10 = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
+        'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
+    cases_PM25 = ['OU', 'ARIMA_(3, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
         'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
 
     output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'line_mse'
@@ -291,6 +294,11 @@ def plot_line_mse(plot_dates, station_name='종로구', target='PM10', sample_si
         input_dir = MSE_RESDIR
     else:
         input_dir = MSE_RESDIR_72
+
+    if target == 'PM10':
+        cases = cases_PM10
+    else:
+        cases = cases_PM25
 
     if plot_dates:
         plot_line_dates(input_dir, output_dir, cases,
@@ -302,8 +310,10 @@ def plot_line_mse(plot_dates, station_name='종로구', target='PM10', sample_si
             output_size=output_size)
 
 def plot_line_mccr(plot_dates, station_name='종로구',  target='PM10', sample_size=48, output_size=24):
-    cases = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate',
-        'XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
+    cases_PM10 = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
+        'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
+    cases_PM25 = ['OU', 'ARIMA_(3, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
+        'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
 
     output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'line_mccr'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
@@ -311,6 +321,11 @@ def plot_line_mccr(plot_dates, station_name='종로구',  target='PM10', sample_
         input_dir = MCCR_RESDIR
     else:
         input_dir = MCCR_RESDIR_72
+
+    if target == 'PM10':
+        cases = cases_PM10
+    else:
+        cases = cases_PM25
 
     if plot_dates:
         plot_line_dates(input_dir, output_dir, cases,
