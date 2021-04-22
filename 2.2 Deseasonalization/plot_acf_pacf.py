@@ -42,10 +42,13 @@ TARGET_MAP = {
     'PM10': r'\mathrm{\mathsf{PM}}_{10}',
     'PM25': r'\mathrm{\mathsf{PM}}_{2.5}',
     'temp': r'\mathrm{\mathsf{Temperature}}',
-    'u': r'\mathrm{\mathsf{Wind Speed (Zonal)}}',
-    'v': r'\mathrm{\mathsf{Wind Speed (Meridional)}}',
+    'u': r'\mathrm{\mathsf{Wind\ Speed\ (Zonal)}}',
+    'v': r'\mathrm{\mathsf{Wind\ Speed\ (Meridional)}}',
+    'wind_spd': '\mathrm{\mathsf{Wind\ Speed}}',
+    'wind_sdir': '\mathrm{\mathsf{Wind\ Speed(sin)}}',
+    'wind_cdir': '\mathrm{\mathsf{Wind\ Speed(cos)}}',
     'pres': r'\mathrm{\mathsf{Pressure}}',
-    'humid': r'\mathrm{\mathsf{Relative Humidity}}',
+    'humid': r'\mathrm{\mathsf{Relative\ Humidity}}',
     'prep': r'\mathrm{\mathsf{Rainfall}}',
     'snow': r'\mathrm{\mathsf{Snow}}'
 }
@@ -88,7 +91,7 @@ def plot():
     multipanellabel_position = (-0.08, 1.02)
 
     # rough figure size
-    w_pad, h_pad = 0.3, 0.30
+    w_pad, h_pad = 1.08, 1.08
     # inch/1pt (=1.0inch / 72pt) * 10pt/row * 8row (6 row + margins)
     # ax_size = min(7.22 / ncols, 9.45 / nrows)
     ax_size = min(14.44 / ncols, 7.22 / nrows)
@@ -111,7 +114,7 @@ def plot():
 
         # keep right distance between subplots
         fig.tight_layout(w_pad=w_pad, h_pad=h_pad)
-        fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
+        fig.subplots_adjust(left=0.1, bottom=0.15, top=0.9)
 
         for rowi, target in enumerate(targets):
             Path.mkdir(plot_data_dir / target, parents=True, exist_ok=True)
@@ -136,7 +139,7 @@ def plot():
             tpl.plot_acf(df_res[target], ax=axs[rowi, 2], fft=True, lags=nlags*24,
                          use_vlines=False, marker=None, linestyle='solid', linewidth=1)
 
-            axs[rowi, 0].set_ylabel(r'$C(s)$ $\mathrm{{({0:s})}}$'.format(TARGET_MAP[target]), fontsize='large')
+            axs[rowi, 0].set_ylabel(r'$C(s)$ - $\mathrm{{{0:s}}}$'.format(TARGET_MAP[target]), fontsize='large')
 
             tpl.plot_pacf(df_raw[target], ax=axs[rowi, 1], lags=12,
                           use_vlines=True, markersize=2)
@@ -156,7 +159,7 @@ def plot():
             for coli in range(ncols):
                 axs[rowi, coli].set_title("")
                 axs[rowi, coli].yaxis.set_major_locator(mticker.MultipleLocator(0.2))
-                axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.13, 1.05), xycoords='axes fraction',
+                axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.02), xycoords='axes fraction',
                                 fontsize='large', fontweight='bold')
 
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
@@ -165,7 +168,7 @@ def plot():
                     tick.label.set_fontsize('medium')
 
             # dataset.plot_seasonality(plot_data_dir / target, plot_png_dir / target, plot_svg_dir / target)
-
+        fig.tight_layout()
         output_fname = f"{station_name}_acf_pacf"
         png_path = output_dir / (output_fname + '.png')
         svg_path = output_dir / (output_fname + '.svg')
