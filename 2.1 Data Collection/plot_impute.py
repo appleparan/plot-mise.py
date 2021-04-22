@@ -42,8 +42,8 @@ TARGET_MAP = {
     'PM25': '\mathrm{\mathsf{PM}}_{2.5}',
     'temp': '\mathrm{\mathsf{Temperature}}',
     'wind_spd': '\mathrm{\mathsf{Wind\ Speed}}',
-    'wind_sdir': '\mathrm{\mathsf{Wind\ Speed(sin)}}',
-    'wind_cdir': '\mathrm{\mathsf{Wind\ Speed(cos)}}',
+    'wind_sdir': '\mathrm{\mathsf{Wind\ Dir.(sin)}}',
+    'wind_cdir': '\mathrm{\mathsf{Wind\ Dir.(cos)}}',
     'pres': '\mathrm{\mathsf{Pressure}}',
     'humid': '\mathrm{\mathsf{Rel.\ Humidity}}',
     'prep': '\mathrm{\mathsf{Precipitation}}',
@@ -98,20 +98,19 @@ def plot(station_name='종로구'):
     fig.tight_layout(w_pad=w_pad, h_pad=h_pad)
     fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
 
-    bar1 = axs.bar(list(range(len(features))), df['notna_pct'], color='tab:blue', alpha=0.3, tick_label=features, label='Not Missing')
-    bar2 = axs.bar(list(range(len(features))), df['na_pct'], bottom=df['notna_pct'], color='tab:orange', tick_label=features, label='Missing')
+    bar1 = axs.bar(list(range(len(features))), df['na_pct'], color='tab:gray', tick_label=features, alpha=0.3, label='Missing')
+    bar2 = axs.bar(list(range(len(features))), df['notna_pct'], bottom=df['na_pct'], color='tab:blue', tick_label=features, label='Not Missing')
 
     for rect1, rect2 in zip(bar1, bar2):
         height1 = rect1.get_height()
         height2 = rect2.get_height()
-        if height2 != 0:
-            axs.annotate('{0: .1f}%'.format(height2),
-                         color='black',
-                         xy=(rect1.get_x() + rect1.get_width() / 2, (height1 + height2) / 2),
-                         xytext=(-1.5, 0),  # use 3 points offset
-                         fontweight='bold',
-                         textcoords="offset points",  # in both directions
-                         ha='center', va='bottom')
+        axs.annotate('{0: .1f}%'.format(height1),
+                        color='white',
+                        xy=(rect1.get_x() + rect1.get_width() / 2, (height1 + 0.5)),
+                        xytext=(-1.5, 0),  # use 3 points offset
+                        fontweight='bold',
+                        textcoords="offset points",  # in both directions
+                        ha='center', va='bottom')
 
     labels = [rf'${TARGET_MAP[tick.get_text()]}$' for tick in axs.get_xticklabels()]
     axs.set_xticklabels(labels, rotation=45)
