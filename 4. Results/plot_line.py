@@ -214,9 +214,6 @@ def plot_line(input_dir, output_dir, cases,
     # total_plot
     for t in range(output_size):
         print(t)
-        # plot
-        fig, ax = plt.subplots(figsize=(7, 7))
-
         fig, axs = plt.subplots(nrows, ncols,
             figsize=(ax_size*ncols, ax_size*nrows),
             dpi=600,
