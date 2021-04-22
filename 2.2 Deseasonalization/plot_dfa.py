@@ -74,10 +74,10 @@ def plot():
     else:
         # 2D
         multipanel_labels = np.array(list(string.ascii_uppercase)[:(nrows*ncols)]).reshape(nrows, ncols)
-    multipanellabel_position = (-0.08, 1.02)
+    multipanellabel_position = (-0.08, 1.05)
 
     # rough figure size
-    w_pad, h_pad = 0.1, 0.30
+    w_pad, h_pad = 0.5, 2.0
     # inch/1pt (=1.0inch / 72pt) * 10pt/row * 8row (6 row + margins)
     # ax_size = min(7.22 / ncols, 9.45 / nrows)
     ax_size = min(7.22 / ncols, 9.45 / nrows)
@@ -127,15 +127,12 @@ def plot():
             large_s = int(len(lag) * 0.3)
 
             ## fitted line for large s
-            sns.lineplot(x='s', y='value', hue='q',
-                            data=pd.melt(df, id_vars=['s'], var_name='q'),
-                            ax = axs[rowi, 0])
-            ## plot h(2) = 1/2
-            base_lines = 10.0**(-2) * np.power(lag, 0.5)
-            axs[rowi, 0].plot(lag, base_lines,
-                        label=r'$h(2) = 0.5$',
-                        alpha=0.7, color='tab:gray', linestyle='dashed')
-
+            # sns.lineplot(x='s', y='value', hue='q',
+            #                 data=pd.melt(df, id_vars=['s'], var_name='q'),
+            #                 ax = axs[rowi, 0])
+            axs[rowi, 0].plot(df['s'], df['2'],
+                              label='Empirical Data',
+                              color='tab:blue', linestyle='solid')
             ## plot fitted line
             p0 = (1., 1.e-5)
             popt, pcov = sp.optimize.curve_fit(model_func, lag[large_s:], df.to_numpy()[:, -1][large_s:], p0)
@@ -143,9 +140,14 @@ def plot():
             gamma_annot[rowi, 0] = 2.0 * (1.0 - popt[1])
             estimated = model_func(lag, popt[0], popt[1])
             axs[rowi, 0].plot(lag, estimated,
-                        label=r'$h(2) = {{{0:.2f}}}, \gamma = {{{1:.2f}}}$'.format(
-                            popt[1], gamma_annot[rowi, 0]),
-                        alpha=0.7, color='tab:cyan', linestyle='dashed')
+                        label=r'Fitted, $h(2) = {{{0:.2f}}}$'.format(
+                            popt[1]),
+                        alpha=1.0, color='tab:orange', linestyle='dashed')
+            ## plot h(2) = 1/2
+            base_lines = 10.0**(-2) * np.power(lag, 0.5)
+            axs[rowi, 0].plot(lag, base_lines,
+                        label=r'Base, $h(2) = 0.5$',
+                        alpha=0.7, color='tab:gray', linestyle='dashed')
             # annotate
             # axs[rowi, 0].annotate(r'$h(2) = {{{0:.2f}}}, \gamma = {{{1:.2f}}}$'.format(
             #                 coef_annot[rowi, 0], gamma_annot[rowi, 0]),
@@ -156,10 +158,11 @@ def plot():
             #                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2", linewidth=0.3),
             #                 fontsize='small')
             print(f"{target} (raw) ({multipanel_labels[rowi, 0]}) - h(2): {coef_annot[rowi, 0]}, gamma: {gamma_annot[rowi, 0]}")
-            leg_handles, leg_labels = axs[rowi, 0].get_legend_handles_labels()
-            leg_labels[0] = r'$h(2)$'
-            axs[rowi, 0].get_legend().remove()
+            # leg_handles, leg_labels = axs[rowi, 0].get_legend_handles_labels()
+            # leg_labels[0] = r'$h(2)$'
+            # axs[rowi, 0].get_legend().remove()
             #axs[rowi, 0].legend(leg_handles, leg_labels, fontsize='x-small')
+            axs[rowi, 0].legend(loc='upper left', fontsize='small')
             axs[rowi, 0].set_xscale('log')
             axs[rowi, 0].set_yscale('log')
 
@@ -168,24 +171,27 @@ def plot():
             lag = df_res['s'].to_numpy()
             large_s = int(len(lag) * 0.3)
             ## fitted line
-            sns.lineplot(x='s', y='value', hue='q',
-                            data=pd.melt(df_res, id_vars=['s'], var_name='q'),
-                            ax = axs[rowi, 1])
-            ## plot h(2) = 1/2
-            base_lines = 10.0**(-2) * np.power(lag, 0.5)
-            axs[rowi, 1].plot(lag, base_lines,
-                        label=r'$h(2) = 0.5$',
-                        alpha=0.7, color='tab:gray', linestyle='dashed')
-            ## plot fitted lin
+            # sns.lineplot(x='s', y='value', hue='q',
+            #                 data=pd.melt(df_res, id_vars=['s'], var_name='q'),
+            #                 ax = axs[rowi, 1])
+            axs[rowi, 1].plot(df_res['s'], df_res['2'],
+                              label='Empirical Data',
+                              color='tab:blue', linestyle='solid')
+            ## plot fitted line
             p0 = (1., 1.e-5)
             popt, pcov = sp.optimize.curve_fit(model_func, lag[large_s:], df_res.to_numpy()[:, -1][large_s:], p0)
             coef_annot[rowi, 1] = popt[1]
             gamma_annot[rowi, 1] = 2.0 * (1.0 - popt[1])
             estimated = model_func(lag, popt[0], popt[1])
             axs[rowi, 1].plot(lag, estimated,
-                        label=r'$h(2) = {{{0:.2f}}}, \gamma = {{{1:.2f}}}$'.format(
-                            popt[1], gamma_annot[rowi, 1]),
-                        alpha=0.7, color='tab:cyan', linestyle='dashed')
+                        label=r'Fitted, $h(2) = {{{0:.2f}}}$'.format(
+                            popt[1]),
+                        alpha=1.0, color='tab:orange', linestyle='dashed')
+            ## plot h(2) = 1/2
+            base_lines = 10.0**(-2) * np.power(lag, 0.5)
+            axs[rowi, 1].plot(lag, base_lines,
+                        label=r'Base, $h(2) = 0.5$',
+                        alpha=0.7, color='tab:gray', linestyle='dashed')
             # axs[rowi, 1].annotate(r'$h(2) = {{{0:.2f}}}, \gamma = {{{1:.2f}}}$'.format(
             #                 coef_annot[rowi, 1], gamma_annot[rowi, 1]),
             #                 xy=(lag[1], estimated[1]),
@@ -195,16 +201,17 @@ def plot():
             #                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2", linewidth=0.3),
             #                 fontsize='small')
             print(f"{target} (norm) ({multipanel_labels[rowi, 1]}) - h(2): {coef_annot[rowi, 1]}, gamma: {gamma_annot[rowi, 1]}")
-            leg_handles, leg_labels = axs[rowi, 1].get_legend_handles_labels()
-            leg_labels[0] = r'$h(2)$'
-            axs[rowi, 1].get_legend().remove()
-
+            # leg_handles, leg_labels = axs[rowi, 1].get_legend_handles_labels()
+            # leg_labels[0] = r'$h(2)$'
+            # axs[rowi, 1].get_legend().remove()
+            axs[rowi, 1].legend(loc='upper left', fontsize='small')
             axs[rowi, 1].set_xscale('log')
             axs[rowi, 1].set_yscale('log')
 
             # set ylabel only for left plot
-            axs[rowi, 0].set_ylabel(r'$F(s)$' + f" (${TARGET_MAP[target]}$)")
+            axs[rowi, 0].set_ylabel(r'$F(s)$' + f" - ${TARGET_MAP[target]}$")
             axs[rowi, 1].set_ylabel('')
+
             # set xlabel only for bottom plot
             if rowi == len(targets)-1:
                 axs[rowi, 0].set_xlabel(r'$s$')
@@ -212,7 +219,7 @@ def plot():
             else:
                 axs[rowi, 0].set_xlabel('', fontsize='medium')
                 axs[rowi, 1].set_xlabel('', fontsize='medium')
-        
+
         x_mins = np.zeros((len(targets), 2))
         x_maxs = np.zeros((len(targets), 2))
         y_mins = np.zeros((len(targets), 2))
@@ -238,6 +245,9 @@ def plot():
             axs[rowi, coli].set_ylim(tot_ymin, axs[rowi, coli].get_ylim()[1])
             axs[rowi, coli].annotate(multipanel_labels[rowi, coli], multipanellabel_position, xycoords='axes fraction',
                                 fontsize='large', fontweight='bold')
+
+        axs[0, 0].set_title('Raw')
+        axs[0, 1].set_title('Deseasonlized')
 
         output_fname = f"{station_name}_DFA2"
         png_path = output_dir / (output_fname + '.png')
