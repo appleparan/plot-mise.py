@@ -34,19 +34,22 @@ plt.rcParams["font.family"] = "Arial"
 plt.rcParams["mathtext.fontset"] = "stix"
 
 TARGET_MAP = {
-    "SO2": '\mathrm{\mathsf{SO}}_{2}',
-    "CO": '\mathrm{\mathsf{CO}}',
-    "O3": '\mathrm{\mathsf{O}}}_{3}',
-    "NO2": '\mathrm{\mathsf{NO}}_{2}',
-    'PM10': '\mathrm{\mathsf{PM}}_{10}',
-    'PM25': '\mathrm{\mathsf{PM}}_{2.5}',
-    'temp': '\mathrm{\mathsf{Temperature}}',
+    "SO2": r'\mathrm{\mathsf{SO}}_{2}',
+    "CO": r'\mathrm{\mathsf{CO}}',
+    "O3": r'\mathrm{\mathsf{O}}}_{3}',
+    "NO2": r'\mathrm{\mathsf{NO}}_{2}',
+    'PM10': r'\mathrm{\mathsf{PM}}_{10}',
+    'PM25': r'\mathrm{\mathsf{PM}}_{2.5}',
+    'temp': r'\mathrm{\mathsf{Temperature}}',
+    'u': r'\mathrm{\mathsf{Wind\ Speed\ (Zonal)}}',
+    'v': r'\mathrm{\mathsf{Wind\ Speed\ (Meridional)}}',
     'wind_spd': '\mathrm{\mathsf{Wind\ Speed}}',
-    'wind_sdir': '\mathrm{\mathsf{Wind\ Dir.(sin)}}',
-    'wind_cdir': '\mathrm{\mathsf{Wind\ Dir.(cos)}}',
-    'pres': '\mathrm{\mathsf{Pressure}}',
-    'humid': '\mathrm{\mathsf{Rel.\ Humidity}}',
-    'prep': '\mathrm{\mathsf{Precipitation}}',
+    'wind_sdir': '\mathrm{\mathsf{Wind\ Direction(sin)}}',
+    'wind_cdir': '\mathrm{\mathsf{Wind\ Direction(cos)}}',
+    'pres': r'\mathrm{\mathsf{Pressure}}',
+    'humid': r'\mathrm{\mathsf{Relative\ Humidity}}',
+    'prep': r'\mathrm{\mathsf{Rainfall}}',
+    'snow': r'\mathrm{\mathsf{Snow}}'
 }
 
 def plot(station_name='종로구'):

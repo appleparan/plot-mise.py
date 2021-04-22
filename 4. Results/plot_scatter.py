@@ -49,12 +49,15 @@ TARGET_MAP = {
     'PM10': r'\mathrm{\mathsf{PM}}_{10}',
     'PM25': r'\mathrm{\mathsf{PM}}_{2.5}',
     'temp': r'\mathrm{\mathsf{Temperature}}',
-    'wind_spd': r'\mathrm{\mathsf{Wind Speed}}',
-    'wind_sdir': r'\mathrm{\mathsf{Wind Speed }}(sin)',
-    'wind_cdir': r'\mathrm{\mathsf{Wind Speed }}(cos)',
-    'pressure': r'\mathrm{\mathsf{Pressure}}',
-    'humid': r'\mathrm{\mathsf{Relative Humidity}}',
-    'prep': r'\mathrm{\mathsf{Precipitation}}',
+    'u': r'\mathrm{\mathsf{Wind\ Speed\ (Zonal)}}',
+    'v': r'\mathrm{\mathsf{Wind\ Speed\ (Meridional)}}',
+    'wind_spd': '\mathrm{\mathsf{Wind\ Speed}}',
+    'wind_sdir': '\mathrm{\mathsf{Wind\ Direction(sin)}}',
+    'wind_cdir': '\mathrm{\mathsf{Wind\ Direction(cos)}}',
+    'pres': r'\mathrm{\mathsf{Pressure}}',
+    'humid': r'\mathrm{\mathsf{Relative\ Humidity}}',
+    'prep': r'\mathrm{\mathsf{Rainfall}}',
+    'snow': r'\mathrm{\mathsf{Snow}}'
 }
 
 CASE_DICT = {

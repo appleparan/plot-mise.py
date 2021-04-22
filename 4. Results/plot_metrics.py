@@ -46,10 +46,13 @@ TARGET_MAP = {
     'PM10': r'\mathrm{\mathsf{PM}}_{10}',
     'PM25': r'\mathrm{\mathsf{PM}}_{2.5}',
     'temp': r'\mathrm{\mathsf{Temperature}}',
-    'u': r'\mathrm{\mathsf{Wind Speed (Zonal)}}',
-    'v': r'\mathrm{\mathsf{Wind Speed (Meridional)}}',
+    'u': r'\mathrm{\mathsf{Wind\ Speed\ (Zonal)}}',
+    'v': r'\mathrm{\mathsf{Wind\ Speed\ (Meridional)}}',
+    'wind_spd': '\mathrm{\mathsf{Wind\ Speed}}',
+    'wind_sdir': '\mathrm{\mathsf{Wind\ Direction(sin)}}',
+    'wind_cdir': '\mathrm{\mathsf{Wind\ Direction(cos)}}',
     'pres': r'\mathrm{\mathsf{Pressure}}',
-    'humid': r'\mathrm{\mathsf{Relative Humidity}}',
+    'humid': r'\mathrm{\mathsf{Relative\ Humidity}}',
     'prep': r'\mathrm{\mathsf{Rainfall}}',
     'snow': r'\mathrm{\mathsf{Snow}}'
 }
