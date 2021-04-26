@@ -90,16 +90,15 @@ def plot(station_name='종로구'):
     width = 0.5
 
     fig, axs = plt.subplots(nrows, ncols,
-                            figsize=(ax_size*ncols, ax_size*nrows),
+                            figsize=(7.22, 5.415),
                             dpi=600,
                             frameon=False,
                             subplot_kw={
-                                'clip_on': False,
-                                'box_aspect': 1
+                                'clip_on': False
                             })
 
-    fig.tight_layout(w_pad=w_pad, h_pad=h_pad)
-    fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
+    fig.tight_layout()
+    fig.subplots_adjust(left=0.1, bottom=0.15)
 
     bar1 = axs.bar(list(range(len(features))), df['na_pct'], color='tab:gray', tick_label=features, alpha=0.3, label='Missing')
     bar2 = axs.bar(list(range(len(features))), df['notna_pct'], bottom=df['na_pct'], color='tab:blue', tick_label=features, label='Not Missing')
@@ -116,13 +115,11 @@ def plot(station_name='종로구'):
                         ha='center', va='bottom')
 
     labels = [rf'${TARGET_MAP[tick.get_text()]}$' for tick in axs.get_xticklabels()]
-    axs.set_xticklabels(labels, rotation=45)
+    axs.set_xticklabels(labels, rotation=70)
     # axs.margins(0.3)    
     axs.set_ylabel('Percentage (%)')
     axs.legend()
 
-    plt.subplots_adjust(bottom=0.15)
-    fig.tight_layout()
     output_prefix = f'{station_name}_missingbar'
     png_path = output_dir / (output_prefix + '.png')
     svg_path = output_dir / (output_prefix + '.svg')
