@@ -245,9 +245,8 @@ def plot_line(input_dir, output_dir, cases,
 
             rowi, coli = divmod(ci, 4)
 
-            axs[rowi, coli].plot(dates, obs, color="tab:blue", linewidth=0.3, alpha=0.7, label="obs")
-            axs[rowi, coli].plot(dates, sim, color="tab:orange", linewidth=0.3, alpha=0.7, label="sim")
-            axs[rowi, coli].legend()
+            axs[rowi, coli].plot(dates, obs, color="tab:blue", linewidth=1.0, alpha=0.8, label="obs")
+            axs[rowi, coli].plot(dates, sim, color="tab:orange", linewidth=1.0, alpha=0.8, label="sim")
 
             axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
                                 fontsize='medium', fontweight='bold')
