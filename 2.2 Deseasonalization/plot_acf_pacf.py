@@ -135,16 +135,16 @@ def plot():
             df_res = dataset.ys
 
             tpl.plot_acf(df_raw[target], ax=axs[rowi, 0], fft=True, lags=nlags*24,
-                         use_vlines=False, marker=None, linestyle='solid', linewidth=1)
+                         use_vlines=False, marker=None, linestyle='solid', linewidth=2.5)
             tpl.plot_acf(df_res[target], ax=axs[rowi, 2], fft=True, lags=nlags*24,
-                         use_vlines=False, marker=None, linestyle='solid', linewidth=1)
+                         use_vlines=False, marker=None, linestyle='solid', linewidth=2.5)
 
             axs[rowi, 0].set_ylabel(r'$C(s)$ - $\mathrm{{{0:s}}}$'.format(TARGET_MAP[target]), fontsize='large')
 
             tpl.plot_pacf(df_raw[target], ax=axs[rowi, 1], lags=12,
-                          use_vlines=True, markersize=2)
+                          use_vlines=True, markersize=5, linewidth=2.5)
             tpl.plot_pacf(df_res[target], ax=axs[rowi, 3], lags=12,
-                          use_vlines=True, markersize=2)
+                          use_vlines=True, markersize=5, linewidth=2.5)
 
             if rowi == nrows-1:
                 for coli in range(ncols):

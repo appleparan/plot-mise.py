@@ -76,7 +76,7 @@ def plot():
         y = np.array(list(map(mccr, x)))
         ycoord = mccr(style['annote_x'])
 
-        axs.plot(x, y, color=style['color'], linestyle=style['linestyle'], linewidth=1.5)
+        axs.plot(x, y, color=style['color'], linestyle=style['linestyle'], linewidth=3)
         axs.annotate(r'$\sigma\ =\ $' + f'{sigma:.1f}',
                     xy=(style['annote_x'], ycoord),
                     xytext=(0, style['ytext']),

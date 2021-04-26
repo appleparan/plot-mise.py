@@ -94,14 +94,14 @@ def plot():
             train_label = None
             valid_label = None
         axs.barh(i_d + 1, duration_train, left=train_fdate,
-                align='center', height=.25, color='tab:blue', label=train_label)
+                align='center', height=.5, color='tab:blue', label=train_label)
         axs.barh(i_d + 1, duration_valid, left=valid_fdate,
-                align='center', height=.25, color='tab:orange', label=valid_label)
+                align='center', height=.5, color='tab:orange', label=valid_label)
         # skip valid_tdate because train_fdate will be almost same as last valid_tdate
         locators = locators + [train_fdate, valid_fdate]
 
     axs.barh(len(dates) + 1, test_tdate - test_fdate,  left=test_fdate,
-                align='center', height=.25, color='tab:green', label='test')
+                align='center', height=.5, color='tab:green', label='test')
     locators = locators + [test_fdate, test_tdate]
 
     axs.legend(fontsize='x-large')

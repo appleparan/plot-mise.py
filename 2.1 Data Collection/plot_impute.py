@@ -72,7 +72,6 @@ def plot(station_name='종로구'):
     features = ['SO2', 'CO', 'NO2', 'PM10', 'PM25', 'temp', 'wind_spd', 'wind_sdir', 'wind_cdir', 'pres', 'humid', 'prep']
 
     df = df.loc[features, :]
-    print(df.head(18))
 
     nrows = 1
     ncols = 1

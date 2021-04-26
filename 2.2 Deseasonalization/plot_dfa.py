@@ -135,7 +135,7 @@ def plot():
             #                 ax = axs[rowi, 0])
             axs[rowi, 0].plot(df['s'], df['2'],
                               label='Empirical Data',
-                              color='tab:blue', linestyle='solid')
+                              color='tab:blue', linestyle='solid', linewidth=2.5)
             ## plot fitted line
             p0 = (1., 1.e-5)
             popt, pcov = sp.optimize.curve_fit(model_func, lag[large_s:], df.to_numpy()[:, -1][large_s:], p0)
@@ -145,12 +145,12 @@ def plot():
             axs[rowi, 0].plot(lag, estimated,
                         label=r'Fitted, $h(2) = {{{0:.2f}}}$'.format(
                             popt[1]),
-                        alpha=1.0, color='tab:orange', linestyle='dashed')
+                        alpha=1.0, color='tab:orange', linestyle='dashdot', linewidth=2.5)
             ## plot h(2) = 1/2
             base_lines = 10.0**(-2) * np.power(lag, 0.5)
             axs[rowi, 0].plot(lag, base_lines,
                         label=r'Base, $h(2) = 0.5$',
-                        alpha=0.7, color='tab:gray', linestyle='dashed')
+                        alpha=0.7, color='tab:gray', linestyle='dashed', linewidth=2.5)
             # annotate
             # axs[rowi, 0].annotate(r'$h(2) = {{{0:.2f}}}, \gamma = {{{1:.2f}}}$'.format(
             #                 coef_annot[rowi, 0], gamma_annot[rowi, 0]),
@@ -179,7 +179,7 @@ def plot():
             #                 ax = axs[rowi, 1])
             axs[rowi, 1].plot(df_res['s'], df_res['2'],
                               label='Empirical Data',
-                              color='tab:blue', linestyle='solid')
+                              color='tab:blue', linestyle='solid', linewidth=2.5)
             ## plot fitted line
             p0 = (1., 1.e-5)
             popt, pcov = sp.optimize.curve_fit(model_func, lag[large_s:], df_res.to_numpy()[:, -1][large_s:], p0)
@@ -189,12 +189,12 @@ def plot():
             axs[rowi, 1].plot(lag, estimated,
                         label=r'Fitted, $h(2) = {{{0:.2f}}}$'.format(
                             popt[1]),
-                        alpha=1.0, color='tab:orange', linestyle='dashed')
+                        alpha=1.0, color='tab:orange', linestyle='dashdot', linewidth=2.5)
             ## plot h(2) = 1/2
             base_lines = 10.0**(-2) * np.power(lag, 0.5)
             axs[rowi, 1].plot(lag, base_lines,
                         label=r'Base, $h(2) = 0.5$',
-                        alpha=0.7, color='tab:gray', linestyle='dashed')
+                        alpha=0.7, color='tab:gray', linestyle='dashed', linewidth=2.5)
             # axs[rowi, 1].annotate(r'$h(2) = {{{0:.2f}}}, \gamma = {{{1:.2f}}}$'.format(
             #                 coef_annot[rowi, 1], gamma_annot[rowi, 1]),
             #                 xy=(lag[1], estimated[1]),
