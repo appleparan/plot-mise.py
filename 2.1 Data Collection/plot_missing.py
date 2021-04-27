@@ -99,11 +99,11 @@ def plot(station_name='종로구'):
     fig.subplots_adjust(left=0.1, bottom=0.2)
 
     sns.heatmap(df.isnull(), cmap=['tab:blue', 'white'], cbar=False, ax=axs)
-    ymin = axs.get_ylim()[0]
+    ymin, ymax = axs.get_ylim()
     for i, fea in enumerate(features):
         axs.annotate('{0: .1f}%'.format(pct_missing[fea]),
                     color='black',
-                    xy=(i + 0.5, ymin),
+                    xy=(i + 0.5, ymax),
                     textcoords='offset points',
                     xytext=(0, 11),
                     # xytext=(0.5, -0.5),  # use 3 points offset
@@ -113,7 +113,7 @@ def plot(station_name='종로구'):
 
     labels = [rf'${TARGET_MAP[tick.get_text()]}$' for tick in axs.get_xticklabels()]
     axs.set_xticklabels(labels, rotation=70)
-    axs.invert_yaxis()
+    # axs.invert_yaxis()
     axs.set_yticks([])
     axs.set_ylabel('')
 
