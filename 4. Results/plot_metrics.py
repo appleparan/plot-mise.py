@@ -195,6 +195,12 @@ def fb(actual: np.ndarray, predicted: np.ndarray):
     avg_p = np.mean(predicted)
     return 2.0 * ((avg_a - avg_p) / (avg_a + avg_p + np.finfo(float).eps))
 
+def fae(actual: np.ndarray, predicted: np.ndarray):
+    """ Fractional Absolute Error """
+    avg_a = np.mean(actual)
+    avg_p = np.mean(predicted)
+    return 2.0 * (np.mean(np.fabs(predicted - actual)) / (avg_a + avg_p + np.finfo(float).eps))
+
 def nmse(actual: np.ndarray, predicted: np.ndarray):
     """ Normalized Mean Square Error """
     return np.mean(np.square(actual - predicted)) / (np.mean(actual) * np.mean(predicted) + np.finfo(float).eps)
@@ -221,7 +227,7 @@ def smape(actual: np.ndarray, predicted: np.ndarray):
     return np.mean(np.divide(np.abs(actual - predicted), (np.abs(actual) + np.abs(predicted) + np.finfo(float).eps) * 0.5))
 
 def mnfb(actual: np.ndarray, predicted: np.ndarray):
-    """Mean Normalized Factor Bias
+    """Mean Normalized Factor Bias, B_MNFB
 
     MNFB = mean(F)
     F = M/O - 1 where M >= O
@@ -241,7 +247,7 @@ def mnfb(actual: np.ndarray, predicted: np.ndarray):
     df_pos = df.loc[df['err'] >= 0, :]
     df_neg = df.loc[df['err'] < 0, :]
 
-    # drop inf 
+    # drop inf
     df_pos.replace([np.inf, -np.inf], np.nan, inplace=True)
     df_pos.dropna(inplace=True)
     df_neg.replace([np.inf, -np.inf], np.nan, inplace=True)
@@ -252,8 +258,8 @@ def mnfb(actual: np.ndarray, predicted: np.ndarray):
     return sum(df_pos['mo'] - 1.0) / len(df_pos['mo']) + \
            sum(1.0 - df_neg['om']) / len(df_neg['om'])
 
-def mngfe(actual: np.ndarray, predicted: np.ndarray):
-    """Mean Normalized Gross Factor Error
+def mnafe(actual: np.ndarray, predicted: np.ndarray):
+    """Mean Normalized Absolute Factor Error
 
     MNGFE = mean(|F|)
     F = M/O - 1 where M >= O
@@ -273,7 +279,7 @@ def mngfe(actual: np.ndarray, predicted: np.ndarray):
     df_pos = df.loc[df['err'] >= 0, :]
     df_neg = df.loc[df['err'] < 0, :]
 
-    # drop inf 
+    # drop inf
     df_pos.replace([np.inf, -np.inf], np.nan, inplace=True)
     df_pos.dropna(inplace=True)
     df_neg.replace([np.inf, -np.inf], np.nan, inplace=True)
@@ -324,8 +330,8 @@ def nmbf(actual: np.ndarray, predicted: np.ndarray):
     else:
         return 1 - avg_o / avg_m
 
-def nmef(actual: np.ndarray, predicted: np.ndarray):
-    """Normalized Mean Error Factor
+def nmaef(actual: np.ndarray, predicted: np.ndarray):
+    """Normalized Mean Absolute Error Factor
 
     MNFB = mean(|F|)
     F = M/O - 1 where M >= O
@@ -406,18 +412,20 @@ def compute_metric(df_obs, df_sim, metric, output_size=24):
             res[i] = vg(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'FB':
             res[i] = fb(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
+        elif metric == 'FAE':
+            res[i] = fae(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'FAC2':
             res[i] = fac2(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'SMAPE':
             res[i] = smape(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'MNFB':
             res[i] = mnfb(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
-        elif metric == 'MNGFE':
-            res[i] = mngfe(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
+        elif metric == 'MNAFE':
+            res[i] = mnafe(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'NMBF':
             res[i] = nmbf(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
-        elif metric == 'NMEF':
-            res[i] = nmef(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
+        elif metric == 'NMAEF':
+            res[i] = nmaef(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'IOA':
             res[i] = ioa(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         else:
@@ -490,7 +498,7 @@ def plot_metric(metric, cases, input_dir = Path('.'), output_dir = Path('.'),
 
     for rowi, target in enumerate(targets):
         # Univariate
-        cases_uni = cases[target]['Univariate']        
+        cases_uni = cases[target]['Univariate']
         df_uni = dfs[target].loc[:, cases_uni]
         df_uni.loc[:, 'time'] = dfs[target].loc[:, 'time'].to_numpy()
         sns.lineplot(x='time', y='value', hue='variable',
@@ -514,8 +522,8 @@ def plot_metric(metric, cases, input_dir = Path('.'), output_dir = Path('.'),
             # legend
             if rowi == 0:
                 leg_handles, _leg_labels = axs[rowi, coli].get_legend_handles_labels()
-                # new legend label map 
-                leg_labels = [CASE_DICT[l] for l in _leg_labels] 
+                # new legend label map
+                leg_labels = [CASE_DICT[l] for l in _leg_labels]
                 axs[rowi, coli].legend(leg_handles, leg_labels,
                                     bbox_to_anchor=(0.0, 1.02, 1, legend_frac),
                                     ncol=1,
@@ -559,6 +567,10 @@ def plot_metric(metric, cases, input_dir = Path('.'), output_dir = Path('.'),
             # yaxis
             # set limit of y axis
             axs[rowi, coli].set_ylabel(metric, fontsize='medium')
+
+            # ylims
+            axs[rowi, coli].set_ylim(np.amin(ymins[rowi, :]), np.amax(ymaxs[rowi, :]))
+
             if metric == 'MAPE':
                 # Best MAPE => 1.0
                 axs[rowi, coli].yaxis.set_major_locator(mpl.ticker.MultipleLocator(0.2))
@@ -608,9 +620,10 @@ def plot_metric(metric, cases, input_dir = Path('.'), output_dir = Path('.'),
                 # Best SMAPE => 1.0
                 axs[rowi, coli].yaxis.set_major_locator(mpl.ticker.MultipleLocator(0.2))
                 axs[rowi, coli].yaxis.set_minor_locator(mpl.ticker.MultipleLocator(0.1))
-
-            # ylims
-            axs[rowi, coli].set_ylim(np.amin(ymins[rowi, :]), np.amax(ymaxs[rowi, :]))
+            elif metric == 'MNFB':
+                axs[rowi, coli].set_ylim(-3, 3)
+            elif metric == 'MNAFE':
+                axs[rowi, coli].set_ylim(0, 3)
 
             # ygrid
             axs[rowi, coli].yaxis.grid(True, visible=True, which='major')
@@ -648,9 +661,9 @@ def plot_metrics_mse(station_name='종로구', targets=['PM10', 'PM25'], sample_
 
     metrics = [ 'MSE', 'MAE', 'MAPE', 'NMSE',
                 'PCORR', 'SCORR', 'R2',
-                'FB', 'MG', 'VG', 'FAC2',
-                'MAAPE', 'SMAPE',
-                'MNFB', 'MNGFE', 'NMBF', 'IOA']
+                'FB', 'FAE', 'MG', 'VG',
+                'FAC2', 'MAAPE', 'SMAPE', 'IOA',
+                'MNFB', 'MNAFE', 'NMBF', 'NMAEF']
 
     for metric in metrics:
         print(f"MSE Loss - {metric} - {station_name} - {sample_size}")
@@ -685,9 +698,9 @@ def plot_metrics_mccr(station_name='종로구', targets=['PM10', 'PM25'], sample
 
     metrics = [ 'MSE', 'MAE', 'MAPE', 'NMSE',
                 'PCORR', 'SCORR', 'R2',
-                'FB', 'MG', 'VG', 'FAC2',
-                'MAAPE', 'SMAPE',
-                'MNFB', 'MNGFE', 'NMBF', 'IOA']
+                'FB', 'FAE', 'MG', 'VG',
+                'FAC2', 'MAAPE', 'SMAPE', 'IOA',
+                'MNFB', 'MNAFE', 'NMBF', 'NMAEF']
 
     for metric in metrics:
         print(f"MCCR Loss - {metric} - {station_name} - {sample_size}")
