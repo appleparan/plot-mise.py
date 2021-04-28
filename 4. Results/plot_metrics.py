@@ -153,6 +153,10 @@ def mse(actual: np.ndarray, predicted: np.ndarray):
     """ Mean Squared Error """
     return np.mean(np.square(_error(actual, predicted)))
 
+def rmse(actual: np.ndarray, predicted: np.ndarray):
+    """ Root Mean Squared Error """
+    return np.sqrt(np.mean(np.square(_error(actual, predicted))))
+
 def mae(actual: np.ndarray, predicted: np.ndarray):
     """ Mean Absolute Error """
     return np.mean(np.abs(_error(actual, predicted)))
@@ -188,6 +192,19 @@ def scorr(actual: np.ndarray, predicted: np.ndarray):
     """ Spearman Rank Correlation Coefficient """
     scorr, p_val = sp.stats.spearmanr(actual, predicted)
     return scorr, p_val
+
+def ecorr(actual: np.ndarray, predicted: np.ndarray):
+    """ Empirical Correlation Coefficient from LSTNet paper  """
+    avg_m = np.mean(predicted)
+    avg_o = np.mean(actual)
+
+    diff_a = actual - avg_o
+    diff_p = predicted - avg_m
+
+    numerator = np.dot(diff_a, diff_p)
+    denominator = np.sqrt(np.sum(np.square(diff_a)) * np.sum(np.square(diff_p)))
+
+    return np.mean(np.divide(numerator, denominator))
 
 def fb(actual: np.ndarray, predicted: np.ndarray):
     """ Fractional Bias """
@@ -310,26 +327,6 @@ def nmbf(actual: np.ndarray, predicted: np.ndarray):
     else:
         return 1 - avg_o / avg_m
 
-def nmbf(actual: np.ndarray, predicted: np.ndarray):
-    """Normalized Mean Bias Factor
-
-    MNFB = mean(|F|)
-    F = avg(M)/avg(O) - 1 where avg(M) >= avg(O)
-        1 - avg(O)/avg(M) where avg(M) < avg(O)
-
-    Reference:
-    * Yu, Shaocai, et al. "New unbiased symmetric metrics for evaluation of air quality models." Atmospheric Science Letters 7.1 (2006): 26-34.
-    """
-    avg_m = np.mean(predicted)
-    avg_o = np.mean(actual)
-
-    # M >= O -> avg(M)/avg(O) - 1
-    # M < O  -> 1 - avg(O)/avg(M)
-    if avg_m >= avg_o:
-        return avg_m / avg_o - 1
-    else:
-        return 1 - avg_o / avg_m
-
 def nmaef(actual: np.ndarray, predicted: np.ndarray):
     """Normalized Mean Absolute Error Factor
 
@@ -379,7 +376,7 @@ def compute_metric(df_obs, df_sim, metric, output_size=24):
 
     """
 
-    if metric == 'PCORR' or metric == 'SCORR' or metric == 'R2':
+    if metric == 'PCORR' or metric == 'SCORR' or metric == 'R2' or metric == 'ECORR':
         res = np.zeros(output_size + 1)
         p_val = np.zeros(output_size + 1)
         res[0] = 1.0
@@ -394,10 +391,14 @@ def compute_metric(df_obs, df_sim, metric, output_size=24):
             res[i + 1], p_val[i + 1] = pcorr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'SCORR':
             res[i + 1], p_val[i + 1] = scorr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
+        elif metric == 'ECORR':
+            res[i + 1] = ecorr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'R2':
             res[i + 1] = r2(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'MSE':
             res[i] = mse(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
+        elif metric == 'RMSE':
+            res[i] = rmse(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'MAE':
             res[i] = mae(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'MAPE':
@@ -599,6 +600,11 @@ def plot_metric(metric, cases, input_dir = Path('.'), output_dir = Path('.'),
                 axs[rowi, coli].set_ylabel(r"Spearman's $\rho$", fontsize='x-small')
                 axs[rowi, coli].yaxis.set_major_locator(mpl.ticker.MultipleLocator(0.2))
                 axs[rowi, coli].yaxis.set_minor_locator(mpl.ticker.MultipleLocator(0.1))
+            elif metric == 'ECORR':
+                # Best SCORR => 1.0
+                axs[rowi, coli].set_ylabel(r"Empirical $\rho$", fontsize='x-small')
+                axs[rowi, coli].yaxis.set_major_locator(mpl.ticker.MultipleLocator(0.2))
+                axs[rowi, coli].yaxis.set_minor_locator(mpl.ticker.MultipleLocator(0.1))
             elif metric == 'FB':
                 # Best FB => 0.0
                 axs[rowi, coli].yaxis.set_minor_locator(mpl.ticker.MultipleLocator(0.1))
@@ -660,7 +666,7 @@ def plot_metrics_mse(station_name='종로구', targets=['PM10', 'PM25'], sample_
         input_dir = MSE_RESDIR
 
     metrics = [ 'MSE', 'MAE', 'MAPE', 'NMSE',
-                'PCORR', 'SCORR', 'R2',
+                'PCORR', 'SCORR', 'ECORR', 'R2',
                 'FB', 'FAE', 'MG', 'VG',
                 'FAC2', 'MAAPE', 'SMAPE', 'IOA',
                 'MNFB', 'MNAFE', 'NMBF', 'NMAEF']
@@ -697,7 +703,7 @@ def plot_metrics_mccr(station_name='종로구', targets=['PM10', 'PM25'], sample
         input_dir = MCCR_RESDIR
 
     metrics = [ 'MSE', 'MAE', 'MAPE', 'NMSE',
-                'PCORR', 'SCORR', 'R2',
+                'PCORR', 'SCORR', 'ECORR', 'R2',
                 'FB', 'FAE', 'MG', 'VG',
                 'FAC2', 'MAAPE', 'SMAPE', 'IOA',
                 'MNFB', 'MNAFE', 'NMBF', 'NMAEF']
