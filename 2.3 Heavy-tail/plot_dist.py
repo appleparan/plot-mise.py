@@ -285,7 +285,7 @@ def plot_cdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
         plt.savefig(svg_path)
         plt.close(fig)
 
-def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
+def plot_fit_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
     assert len(targets) > 1
     jongno_fname = 'input_jongno_imputed_hourly_pandas.csv'
     seoul_fname = 'input_seoul_imputed_hourly_pandas.csv'
@@ -396,12 +396,128 @@ def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
                 axs[rowi, coli].set_xscale('linear')
                 axs[rowi, coli].set_yscale('linear')
                 axs[rowi, coli].yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1E'))
-                axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.03, 1.05), xycoords='axes fraction',
+                axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
                                 fontsize='medium', fontweight='bold')
 
                 # small yticks
                 for tick in axs[rowi, coli].yaxis.get_major_ticks():
                     tick.label.set_fontsize('small')
+                for tick in axs[rowi, coli].xaxis.get_major_ticks():
+                    tick.label.set_fontsize('small')
+
+        fig.tight_layout()
+        output_prefix = f'{station_name}_fitpdf'
+        png_path = output_dir / (output_prefix + '.png')
+        svg_path = output_dir / (output_prefix + '.svg')
+        plt.savefig(png_path, dpi=600)
+        plt.savefig(svg_path)
+        plt.close(fig)
+
+
+def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
+    assert len(targets) > 1
+    jongno_fname = 'input_jongno_imputed_hourly_pandas.csv'
+    seoul_fname = 'input_seoul_imputed_hourly_pandas.csv'
+    
+    sns.set_context('paper')
+    sns.set_palette('tab10')
+
+    output_dir = SCRIPT_DIR / 'out'
+    Path.mkdir(output_dir, parents=True, exist_ok=True)
+
+    stations = ['종로구']
+
+    # plot distribution of target (raw data)
+    nrows = 2
+    ncols = 2
+    if nrows == 1 or ncols == 1:
+        # 1D
+        multipanel_labels = np.array(list(string.ascii_uppercase)[:ncols])
+    else:
+        # 2D
+        multipanel_labels = np.array(list(string.ascii_uppercase)[:(nrows*ncols)]).reshape(nrows, ncols)
+    multipanellabel_position = (-0.08, 1.02)
+
+    # rough figure size
+    w_pad, h_pad = 0.25, 0.30
+    # inch/1pt (=1.0inch / 72pt) * 10pt/row * 8row (6 row + margins)
+    # ax_size = min(7.22 / ncols, 9.45 / nrows)
+    ax_size = min(7.22 / ncols, 9.45 / nrows)
+    # legend_size = 0.6 * fig_size
+    fig_size_w = ax_size*ncols
+    fig_size_h = ax_size*nrows
+
+    train_valid_fdate = dt.datetime(2008, 1, 3, 1).astimezone(SEOULTZ)
+    train_valid_tdate = dt.datetime(2018, 12, 31, 23).astimezone(SEOULTZ)
+
+    for station_name in stations:
+        fig, axs = plt.subplots(nrows, ncols,
+            figsize=(ax_size*ncols, ax_size*nrows),
+            dpi=600,
+            frameon=False,
+            subplot_kw={
+                'clip_on': False,
+                'box_aspect': 1
+            })
+
+        # keep right distance between subplots
+        fig.tight_layout(w_pad=w_pad, h_pad=h_pad)
+        fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
+
+        for rowi, target in enumerate(targets):
+            dataset = data.UnivariateRNNMeanSeasonalityDataset(
+                            station_name=station_name,
+                            target=target,
+                            filepath=INPUTDATA_path / seoul_fname,
+                            features=[target],
+                            fdate=train_valid_fdate,
+                            tdate=train_valid_tdate,
+                            sample_size=sample_size,
+                            output_size=output_size)
+            dataset.preprocess()
+
+            df_raw = dataset.ys_raw
+            df_res = dataset.ys
+
+            arr_raw = df_raw[target].to_numpy()
+            arr_res = df_res[target].to_numpy()
+            dist_raw = np.random.normal(np.mean(arr_raw), np.std(arr_raw), len(arr_raw))
+            dist_res = np.random.normal(np.mean(arr_res), np.std(arr_res), len(arr_res))
+            df_plot_raw = pd.DataFrame.from_dict({target: arr_raw, 'gaussian': dist_raw})
+            df_plot_res = pd.DataFrame.from_dict({target: arr_res, 'gaussian': dist_res})
+            skews = np.zeros(2)
+            skews[0] = sp.stats.skew(df_plot_raw.loc[:, target].to_numpy())
+            skews[1] = sp.stats.skew(df_plot_res.loc[:, target].to_numpy())
+
+            sns.kdeplot(data=df_plot_raw.loc[:, target], ax=axs[rowi, 0])
+            sns.kdeplot(data=df_plot_res.loc[:, target], ax=axs[rowi, 1])
+
+            axs[0, 0].set_title('Raw')
+            axs[0, 1].set_title('Deseasonlized')
+
+            # disable y label on right side plot
+            axs[rowi, 0].set_ylabel(f"PDF - " + rf"${TARGET_MAP[target]}$")
+            axs[rowi, 1].yaxis.label.set_visible(False)
+
+            # remove legend title
+            for coli in range(2):
+                # axs[rowi, coli].legend().remove()
+                axs[rowi, coli].grid(True, zorder=-5)
+                axs[rowi, coli].set_xlabel('')
+                axs[rowi, coli].set_xscale('linear')
+                axs[rowi, coli].set_yscale('linear')
+                axs[rowi, coli].yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1E'))
+                axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
+                                fontsize='medium', fontweight='bold')
+
+                axs[rowi, coli].annotate('Skewness: {0:.2f}'.format(skews[coli]),
+                                        xy=(0.6, 0.9), xycoords='axes fraction',
+                                        bbox=dict(boxstyle="square", fc='white', fill=True, linewidth=0.5),
+                                        fontsize='medium')
+
+                # small yticks
+                for tick in axs[rowi, coli].yaxis.get_major_ticks():
+                    tick.label.set_fontsize('x-small')
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
                     tick.label.set_fontsize('small')
 
@@ -419,6 +535,8 @@ if __name__ == '__main__':
         help="plot CDF")
     parser.add_argument("-p", "--pdf", nargs='*',
         help="plot PDF")
+    parser.add_argument("-f", "--fitpdf", nargs='*',
+        help="plot PDF")
     parser.add_argument("-d", "--ccdf", nargs='*',
         help="plot CCDF")
 
@@ -427,6 +545,9 @@ if __name__ == '__main__':
     targets = ['PM10', 'PM25']
     if args["cdf"] != None:
         plot_cdf(targets=targets, sample_size=48, output_size=24)
+
+    if args["fitpdf"] != None:
+        plot_fit_pdf(targets=targets, sample_size=48, output_size=24)
 
     if args["pdf"] != None:
         plot_pdf(targets=targets, sample_size=48, output_size=24)
