@@ -193,8 +193,8 @@ def scorr(actual: np.ndarray, predicted: np.ndarray):
     scorr, p_val = sp.stats.spearmanr(actual, predicted)
     return scorr, p_val
 
-def ecorr(actual: np.ndarray, predicted: np.ndarray):
-    """ Empirical Correlation Coefficient from LSTNet paper  """
+def corr(actual: np.ndarray, predicted: np.ndarray):
+    """ Correlation Coefficient from LSTNet paper  """
     avg_m = np.mean(predicted)
     avg_o = np.mean(actual)
 
@@ -376,7 +376,7 @@ def compute_metric(df_obs, df_sim, metric, output_size=24):
 
     """
 
-    if metric == 'PCORR' or metric == 'SCORR' or metric == 'R2' or metric == 'ECORR':
+    if metric == 'PCORR' or metric == 'SCORR' or metric == 'R2' or metric == 'CORR':
         res = np.zeros(output_size + 1)
         p_val = np.zeros(output_size + 1)
         res[0] = 1.0
@@ -391,8 +391,8 @@ def compute_metric(df_obs, df_sim, metric, output_size=24):
             res[i + 1], p_val[i + 1] = pcorr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'SCORR':
             res[i + 1], p_val[i + 1] = scorr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
-        elif metric == 'ECORR':
-            res[i + 1] = ecorr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
+        elif metric == 'CORR':
+            res[i + 1] = corr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'R2':
             res[i + 1] = r2(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'MSE':
@@ -600,9 +600,9 @@ def plot_metric(metric, cases, input_dir = Path('.'), output_dir = Path('.'),
                 axs[rowi, coli].set_ylabel(r"Spearman's $\rho$", fontsize='x-small')
                 axs[rowi, coli].yaxis.set_major_locator(mpl.ticker.MultipleLocator(0.2))
                 axs[rowi, coli].yaxis.set_minor_locator(mpl.ticker.MultipleLocator(0.1))
-            elif metric == 'ECORR':
+            elif metric == 'CORR':
                 # Best SCORR => 1.0
-                axs[rowi, coli].set_ylabel(r"Empirical $\rho$", fontsize='x-small')
+                axs[rowi, coli].set_ylabel("Corr. Coef.", fontsize='x-small')
                 axs[rowi, coli].yaxis.set_major_locator(mpl.ticker.MultipleLocator(0.2))
                 axs[rowi, coli].yaxis.set_minor_locator(mpl.ticker.MultipleLocator(0.1))
             elif metric == 'FB':
@@ -666,7 +666,7 @@ def plot_metrics_mse(station_name='종로구', targets=['PM10', 'PM25'], sample_
         input_dir = MSE_RESDIR
 
     metrics = [ 'MSE', 'MAE', 'MAPE', 'NMSE',
-                'PCORR', 'SCORR', 'ECORR', 'R2',
+                'PCORR', 'SCORR', 'CORR', 'R2',
                 'FB', 'FAE', 'MG', 'VG',
                 'FAC2', 'MAAPE', 'SMAPE', 'IOA',
                 'MNFB', 'MNAFE', 'NMBF', 'NMAEF']
@@ -703,7 +703,7 @@ def plot_metrics_mccr(station_name='종로구', targets=['PM10', 'PM25'], sample
         input_dir = MCCR_RESDIR
 
     metrics = [ 'MSE', 'MAE', 'MAPE', 'NMSE',
-                'PCORR', 'SCORR', 'ECORR', 'R2',
+                'PCORR', 'SCORR', 'CORR', 'R2',
                 'FB', 'FAE', 'MG', 'VG',
                 'FAC2', 'MAAPE', 'SMAPE', 'IOA',
                 'MNFB', 'MNAFE', 'NMBF', 'NMAEF']

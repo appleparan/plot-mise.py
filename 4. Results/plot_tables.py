@@ -193,8 +193,8 @@ def scorr(actual: np.ndarray, predicted: np.ndarray):
     scorr, p_val = sp.stats.spearmanr(actual, predicted)
     return scorr, p_val
 
-def ecorr(actual: np.ndarray, predicted: np.ndarray):
-    """ Empirical Correlation Coefficient from LSTNet paper  """
+def corr(actual: np.ndarray, predicted: np.ndarray):
+    """ Correlation Coefficient from LSTNet paper  """
     avg_m = np.mean(predicted)
     avg_o = np.mean(actual)
 
@@ -416,8 +416,8 @@ def compute_metric(df_obs, df_sim, metric, output_size=24):
             res[i], p_val[i] = pcorr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'SCORR':
             res[i], p_val[i] = scorr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
-        elif metric == 'ECORR':
-            res[i] = ecorr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
+        elif metric == 'CORR':
+            res[i] = corr(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'R2':
             res[i] = r2(df_obs.loc[:, str(i)].to_numpy(), df_sim.loc[:, str(i)].to_numpy())
         elif metric == 'MSE':
@@ -484,6 +484,7 @@ def plot_table_loss(cases_mse, cases_mccr, metrics, losses, horizons, input_dirs
     mindex = pd.MultiIndex.from_tuples(rows, names=["model", "metric"])
     cindex = pd.MultiIndex.from_tuples(cols, names=["loss", "horizon"])
     df = pd.DataFrame(index=mindex, columns=cindex)
+    idx = pd.IndexSlice
 
     for loss in losses:
         if loss == 'MCCR':
@@ -498,11 +499,13 @@ def plot_table_loss(cases_mse, cases_mccr, metrics, losses, horizons, input_dirs
             for metric in metrics:
                 lags, res, p_val = compute_metric(df_obs, df_sim, metric)
 
-                # weird bug, can't assign lterables
-                vals = {k: v for k, v in zip(horizons, res[horizons0])}
-                for k, v in vals.items():
-                    df.loc[(CASE_DICT[case], metric), (loss, k)] = v
+                # if metric == 'NMAEF':
+                #     print(loss, case, metric, res[horizons0])
 
+                # weird bug, can't assign lterables
+                df.loc[idx[CASE_DICT[case], metric], idx[loss, :]] = res[horizons0]
+
+    print(df.loc[idx[:, 'NMAEF'], idx[:, :]])
     df.to_csv(output_dir / (f'metrics_table_loss_{station_name}_{target}_{sample_size}.csv'))
 
 def plot_table_samples(cases, metrics, sample_sizes, horizons, input_dirs: dict = {48: Path('.')}, output_dir = Path('.'),
@@ -530,6 +533,7 @@ def plot_table_samples(cases, metrics, sample_sizes, horizons, input_dirs: dict 
     mindex = pd.MultiIndex.from_tuples(rows, names=["model", "metric"])
     cindex = pd.MultiIndex.from_tuples(cols, names=["sample size", "horizon"])
     df = pd.DataFrame(index=mindex, columns=cindex)
+    idx = pd.IndexSlice
 
     for case, sample_size in itertools.product(cases_tot, sample_sizes):
         df_obs, df_sim = load_df(input_dirs[sample_size], case,
@@ -537,8 +541,9 @@ def plot_table_samples(cases, metrics, sample_sizes, horizons, input_dirs: dict 
 
         for metric in metrics:
             lags, res, p_val = compute_metric(df_obs, df_sim, metric)
-            df.loc[(CASE_DICT[case], metric), (sample_size)] = res[horizons0]
+            df.loc[idx[CASE_DICT[case], metric], idx[sample_size, :]] = res[horizons0]
 
+    print(df.loc[idx[:, 'NMAEF'], idx[:, :]])
     df.to_csv(output_dir / (f'metrics_table_sample_{station_name}_{target}_{loss}.csv'))
 
 def plot_tables_mse(station_name='종로구', targets=['PM10', 'PM25'], output_size=24):
@@ -546,7 +551,7 @@ def plot_tables_mse(station_name='종로구', targets=['PM10', 'PM25'], output_s
     output_dir = SCRIPT_DIR / 'out'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
 
-    metrics = ['RMSE', 'ECORR', 'NMBF', 'NMAEF']
+    metrics = ['RMSE', 'CORR', 'NMBF', 'NMAEF']
     cases = {
         'PM10': {
             'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate'],
@@ -579,7 +584,7 @@ def plot_tables_mccr(station_name='종로구', targets=['PM10', 'PM25'], output_
     output_dir = SCRIPT_DIR / 'out'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
 
-    metrics = ['RMSE', 'ECORR', 'NMBF', 'NMAEF']
+    metrics = ['RMSE', 'CORR', 'NMBF', 'NMAEF']
     cases = {
         'PM10': {
             'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate'],
@@ -614,7 +619,7 @@ def plot_tables_loss(station_name='종로구', targets=['PM10', 'PM25'], sample_
     output_dir = SCRIPT_DIR / 'out'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
 
-    metrics = ['RMSE', 'ECORR', 'NMBF', 'NMAEF']
+    metrics = ['RMSE', 'CORR', 'NMBF', 'NMAEF']
     cases_mccr = {
         'PM10': {
             'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate'],
