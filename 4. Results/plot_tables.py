@@ -505,7 +505,6 @@ def plot_table_loss(cases_mse, cases_mccr, metrics, losses, horizons, input_dirs
                 # weird bug, can't assign lterables
                 df.loc[idx[CASE_DICT[case], metric], idx[loss, :]] = res[horizons0]
 
-    print(df.loc[idx[:, 'NMAEF'], idx[:, :]])
     df.to_csv(output_dir / (f'metrics_table_loss_{station_name}_{target}_{sample_size}.csv'))
 
 def plot_table_samples(cases, metrics, sample_sizes, horizons, input_dirs: dict = {48: Path('.')}, output_dir = Path('.'),
@@ -543,7 +542,6 @@ def plot_table_samples(cases, metrics, sample_sizes, horizons, input_dirs: dict 
             lags, res, p_val = compute_metric(df_obs, df_sim, metric)
             df.loc[idx[CASE_DICT[case], metric], idx[sample_size, :]] = res[horizons0]
 
-    print(df.loc[idx[:, 'NMAEF'], idx[:, :]])
     df.to_csv(output_dir / (f'metrics_table_sample_{station_name}_{target}_{loss}.csv'))
 
 def plot_tables_mse(station_name='종로구', targets=['PM10', 'PM25'], output_size=24):

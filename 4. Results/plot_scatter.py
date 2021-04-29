@@ -149,6 +149,11 @@ def plot_scatter(input_dir, output_dir, cases,
             axs[rowi, coli].plot(xs, xs, color="black", alpha=0.7, linewidth=1)
             # best fit line
             axs[rowi, coli].plot(xs, xs * best_fit[0] + best_fit[1], color="tab:orange", alpha=0.7, linewidth=1.5)
+            axs[rowi, coli].annotate(r'$y = {{{0:.2f}}} x + {{{1:.2f}}}$'.format(
+                        best_fit[0], best_fit[1]),
+                        xy=(0.35, 0.9), xycoords='axes fraction',
+                        bbox=dict(boxstyle="square", fc=None, fill=False, linewidth=0.3),
+                        fontsize='medium')
             axs[rowi, coli].set_aspect(1.0)
 
             axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
@@ -179,7 +184,7 @@ def plot_scatter(input_dir, output_dir, cases,
         png_path = output_dir / (output_prefix + '.png')
         svg_path = output_dir / (output_prefix + '.svg')
         plt.savefig(png_path, dpi=600)
-        plt.savefig(svg_path)
+        # plt.savefig(svg_path)
         plt.close(fig)
 
 def plot_scatter_mse(station_name='종로구', target='PM10', sample_size=48, output_size=24):
