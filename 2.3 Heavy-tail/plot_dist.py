@@ -418,7 +418,7 @@ def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
     assert len(targets) > 1
     jongno_fname = 'input_jongno_imputed_hourly_pandas.csv'
     seoul_fname = 'input_seoul_imputed_hourly_pandas.csv'
-    
+
     sns.set_context('paper')
     sns.set_palette('tab10')
 
@@ -489,8 +489,12 @@ def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
             skews[0] = sp.stats.skew(df_plot_raw.loc[:, target].to_numpy())
             skews[1] = sp.stats.skew(df_plot_res.loc[:, target].to_numpy())
 
-            sns.kdeplot(data=df_plot_raw.loc[:, target], ax=axs[rowi, 0])
-            sns.kdeplot(data=df_plot_res.loc[:, target], ax=axs[rowi, 1])
+            # Freedman–Diaconis rule
+            bw = lambda x: 2 * sp.stats.iqr(x) / np.power(len(x), 1.0/3.0)
+            sns.histplot(data=df_plot_raw.loc[:, target], ax=axs[rowi, 0],
+                         binwidth=bw(df_plot_raw.loc[:, target].to_numpy()), kde=True)
+            sns.histplot(data=df_plot_res.loc[:, target], ax=axs[rowi, 1],
+                         binwidth=bw(df_plot_res.loc[:, target].to_numpy()), kde=True)
 
             axs[0, 0].set_title('Raw')
             axs[0, 1].set_title('Deseasonlized')
@@ -506,7 +510,7 @@ def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
                 axs[rowi, coli].set_xlabel('')
                 axs[rowi, coli].set_xscale('linear')
                 axs[rowi, coli].set_yscale('linear')
-                axs[rowi, coli].yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1E'))
+                # axs[rowi, coli].yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1E'))
                 axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
                                 fontsize='medium', fontweight='bold')
 
