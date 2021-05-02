@@ -38,6 +38,7 @@ pd.set_option('mode.chained_assignment', None)
 # matplotlib params
 plt.rcParams["font.family"] = "Arial"
 plt.rcParams["mathtext.fontset"] = "stix"
+mpl.rcParams['hatch.linewidth'] = 0.3
 
 MCCR_RESDIR = SCRIPT_DIR / '..' / '..' / 'Figures_DATA_MCCR'
 MSE_RESDIR = SCRIPT_DIR / '..' / '..' / 'Figures_DATA_MSE'
@@ -504,115 +505,11 @@ def plot_table_loss(cases_mse, cases_mccr, metrics, losses, horizons, input_dirs
 
                 # weird bug, can't assign lterables
                 df.loc[idx[CASE_DICT[case], metric], idx[loss, :]] = res[horizons0]
-    return df
-
-def plot_table_samples(cases, metrics, sample_sizes, horizons, input_dirs: dict = {48: Path('.')}, output_dir = Path('.'),
-               station_name='종로구', target='PM10', loss='MSE', output_size=24):
-    """Create result table like LSTNet gathered by loss function
-
-    1. Table Index (Compare sample size)
-        * Row : Methods -> Metric
-            * Row 1 : methods (cases)
-            * Row 2 : metrics
-        * Column : sample size -> horizon size
-            * Col 1 : sample_size
-            * Col 2 : horizon
-    """
-    # targets is actually useless
-
-    # zero index horizon
-    horizons0 = np.array(horizons) - 1
-
-    cases_tot = cases[target]['Univariate'] + cases[target]['Multivariate']
-    cases_tot_names = [CASE_DICT[c] for c in cases_tot]
-    rows = list(itertools.product(cases_tot_names, metrics))
-    cols = list(itertools.product(sample_sizes, horizons))
-
-    mindex = pd.MultiIndex.from_tuples(rows, names=["model", "metric"])
-    cindex = pd.MultiIndex.from_tuples(cols, names=["sample size", "horizon"])
-    df = pd.DataFrame(index=mindex, columns=cindex)
-    idx = pd.IndexSlice
-
-    for case, sample_size in itertools.product(cases_tot, sample_sizes):
-        df_obs, df_sim = load_df(input_dirs[sample_size], case,
-                                 station_name=station_name, target=target)
-
-        for metric in metrics:
-            lags, res, p_val = compute_metric(df_obs, df_sim, metric)
-            df.loc[idx[CASE_DICT[case], metric], idx[sample_size, :]] = res[horizons0]
 
     return df
 
-def plot_plot_tables_mse(station_name='종로구', targets=['PM10', 'PM25'], output_size=24):
-
-    output_dir = SCRIPT_DIR / 'out'
-    Path.mkdir(output_dir, parents=True, exist_ok=True)
-
-    metrics = ['RMSE', 'CORR', 'NMBF', 'NMAEF']
-    cases = {
-        'PM10': {
-            'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate'],
-            'Multivariate': ['XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
-        },
-        'PM25': {
-            'Univariate': ['OU', 'ARIMA_(3, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate'],
-            'Multivariate': ['XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
-        }
-    }
-    sample_sizes = [48, 72]
-    horizons = [1, 4, 8, 24]
-
-    input_dirs = {
-        48: MSE_RESDIR,
-        72: MSE_RESDIR_72
-    }
-
-    for target in targets:
-        print(f"MSE Loss - {station_name} - {target}")
-        df = plot_table_samples(cases, metrics, sample_sizes, horizons,
-                                input_dirs=input_dirs,
-                                output_dir=output_dir,
-                                station_name=station_name,
-                                target=target,
-                                output_size=output_size,
-                                loss='MSE')
-
-def plot_plot_tables_mccr(station_name='종로구', targets=['PM10', 'PM25'], output_size=24):
-    output_dir = SCRIPT_DIR / 'out'
-    Path.mkdir(output_dir, parents=True, exist_ok=True)
-
-    metrics = ['RMSE', 'CORR', 'NMBF', 'NMAEF']
-    cases = {
-        'PM10': {
-            'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate'],
-            'Multivariate': ['XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
-        },
-        'PM25': {
-            'Univariate': ['OU', 'ARIMA_(3, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate'],
-            'Multivariate': ['XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
-        }
-    }
-
-    sample_sizes = [48, 72]
-    horizons = [1, 4, 8, 24]
-
-    input_dirs = {
-        48: MCCR_RESDIR,
-        72: MCCR_RESDIR_72
-    }
-
-    for target in targets:
-        print(f"MCCR Loss - {station_name} - {target}")
-        df = plot_table_samples(cases, metrics, sample_sizes, horizons,
-                                input_dirs=input_dirs,
-                                output_dir=output_dir,
-                                station_name=station_name,
-                                target=target,
-                                output_size=output_size,
-                                loss='MCCR')
-
-def plot_plot_tables_loss(plot_cases, station_name='종로구', targets=['PM10', 'PM25'], sample_size=72, output_size=24):
-    """Plot single metric comparisioon per horizons
+def plot_plot_tables_error(plot_cases, station_name='종로구', targets=['PM10', 'PM25'], sample_size=72, output_size=24):
+    """Plot single error metric comparisioon per horizons
 
     each subplot compare cases of plot_metric
     each subplot indicate single horizon
@@ -630,12 +527,13 @@ def plot_plot_tables_loss(plot_cases, station_name='종로구', targets=['PM10',
     | metrics[3] |
     --------------
     """
-
+    sns.set_context('paper')
+    sns.set_palette('tab10')
     output_dir = SCRIPT_DIR / 'out'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
 
     # metrics = ['RMSE', 'CORR', 'NMBF', 'NMAEF']
-    metrics = ['RMSE', 'CORR', 'NMAEF']
+    metrics = ['NMAEF', 'RMSE', 'CORR']
     cases_mccr = {
         'PM10': {
             'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate'],
@@ -715,9 +613,13 @@ def plot_plot_tables_loss(plot_cases, station_name='종로구', targets=['PM10',
             # 1, 2, 3, 4 -> 4, 8, 12, 16 -> 2, 6, 10, 14
             width = 0.5
             xs = -2 * width + np.arange(start=2*width+1, stop=(len_groups+2)*len_groups*width, step=(len_groups+2)*width)
-            
+
             rects, labels = [], []
-            colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+            # tab10 & tab20
+            # https://jrnold.github.io/ggthemes/reference/tableau_color_pal.html
+            colors = ['tab:blue', 'tab:orange', '#A0CBE8', '#FFBE7D']
+            alphas = [1.0, 1.0, 1.0, 1.0]
+            hatches = [None, None, '//', '//']
             ymin = np.finfo('float64').max
             ymax = np.finfo('float64').min
             for reci, (loss, case) in enumerate(itertools.product(losses, cases)):
@@ -726,19 +628,27 @@ def plot_plot_tables_loss(plot_cases, station_name='종로구', targets=['PM10',
                 # 3. MCCR - LSTNet - tab:orange
                 # 4. MCCR - TST - tab:red
                 ys = df.loc[idx[case, metric], idx[loss, :]]
-                ymin, ymax = np.amin(ys), np.amax(ys)
+                ymin = min(ymin, np.amin(ys))
+                ymax = max(ymax, np.amax(ys))
+                print(f"{loss} - {case}", ymax, np.amax(ys))
                 label = f"{loss} - {case}"
-                base = -1.5 * width 
+                base = -1.5 * width
                 offset = reci * width
-                rects.append(axs[rowi].bar(xs + base + offset, ys, label=label, width=width, color=colors[reci]))
+                rects.append(axs[rowi].bar(xs + base + offset, ys, label=label, \
+                             width=width, color=colors[reci],
+                             zorder=4,
+                             alpha=alphas[reci], hatch=hatches[reci]))
 
             # scale ylimit
-            _ymin, _ymax = axs[rowi].get_ylim()
-            
+            mag = abs(ymax - ymin)
+            nymin = max(0.0, ymin - mag * 0.15)
+            nymax = ymax + mag * 0.1
+            axs[rowi].set_ylim(nymin, nymax)
 
             if rowi == len(metrics) - 1:
                 axs[rowi].set_xlabel('horizon')
             axs[rowi].set_ylabel(metric)
+            axs[rowi].yaxis.grid(True)
             axs[rowi].set_xticks(xs)
             axs[rowi].set_xticklabels(horizons)
             axs[rowi].legend(fontsize='small')
@@ -752,14 +662,201 @@ def plot_plot_tables_loss(plot_cases, station_name='종로구', targets=['PM10',
         plt.savefig(svg_path)
         plt.close(fig)
 
+
+def plot_plot_tables_bias(plot_cases, station_name='종로구', targets=['PM10', 'PM25'], sample_size=72, output_size=24):
+    """Plot bias for violin plot
+
+    * Each axes is target (PM10, PM2.5)
+    * Draw split violin plot, split is done by loss
+    * Each split violin is single model
+    --------------
+    | PM10  |
+    --------------
+    | PM2.5 |
+    --------------
+    """
+    sns.set_context('paper')
+    sns.set_palette('tab10')
+    output_dir = SCRIPT_DIR / 'out'
+    Path.mkdir(output_dir, parents=True, exist_ok=True)
+
+    # metrics = ['RMSE', 'CORR', 'NMBF', 'NMAEF']
+    metrics = ['NMAEF', 'RMSE', 'CORR']
+    cases_mccr = {
+        'PM10': {
+            'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate'],
+            'Multivariate': ['XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
+        },
+        'PM25': {
+            'Univariate': ['OU', 'ARIMA_(3, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate'],
+            'Multivariate': ['XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
+        }
+    }
+
+    cases_mse = {
+        'PM10': {
+            'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate'],
+            'Multivariate': ['XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
+        },
+        'PM25': {
+            'Univariate': ['OU', 'ARIMA_(3, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate'],
+            'Multivariate': ['XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
+        }
+    }
+
+    losses = ['MSE', 'MCCR']
+    horizons = [1, 4, 8, 24]
+
+    if sample_size == 48:
+        input_dirs = {
+            'MSE': MSE_RESDIR,
+            'MCCR': MCCR_RESDIR
+        }
+    else:
+        input_dirs = {
+            'MSE': MSE_RESDIR_72,
+            'MCCR': MCCR_RESDIR_72
+        }
+
+    nrows = len(targets)
+    ncols = 1
+    multipanel_labels = np.array(list(string.ascii_uppercase)[:(nrows*ncols)]).reshape(nrows, ncols)
+    multipanellabel_position = (-0.08, 1.02)
+
+    # rough figure size
+    w_pad, h_pad = 0.1, 0.30
+    # inch/1pt (=1.0inch / 72pt) * 10pt/row * 8row (6 row + margins)
+    # ax_size = min(7.22 / ncols, 9.45 / nrows)
+    ax_size = min(7.22 / ncols, 7.22 / nrows)
+    # legend_size = 0.6 * fig_size
+    fig_size_w = ax_size*ncols
+    fig_size_h = ax_size*nrows
+
+    for hi, horizon in enumerate(horizons):
+        cols = list(itertools.product(losses, plot_cases))
+        cindex = pd.MultiIndex.from_tuples(cols, names=["loss", "case"])
+        idx = pd.IndexSlice
+
+        fig, axs = plt.subplots(nrows, ncols,
+            figsize=(7.22*ncols, ax_size*nrows),
+            dpi=600,
+            frameon=False,
+            subplot_kw={
+                'clip_on': False,
+        })
+        # keep right distance between subplots
+        # fig.tight_layout(h_pad=h_pad)
+        # fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
+        for rowi, target in enumerate(targets):
+            print(f"{station_name} - {target} - {str(horizon).zfill(2)}")
+            df_fb = pd.DataFrame(columns=cindex)
+            for loss in losses:
+                if loss == 'MCCR':
+                    cases = cases_mccr[target]['Univariate'] + cases_mccr[target]['Multivariate']
+                else:
+                    cases = cases_mse[target]['Univariate'] + cases_mse[target]['Multivariate']
+
+                for case in cases:
+                    case_legend = CASE_DICT[case]
+                    if case_legend not in plot_cases:
+                        continue
+
+                    df_obs, df_sim = load_df(input_dirs[loss], case,
+                                            station_name=station_name, target=target)
+                    df_diff = df_sim - df_obs
+
+                    """
+                    columns : case, loss, horizon
+                    rows : total_length
+                    """
+                    df_fb.loc[idx[:], idx[loss, case_legend]] = df_diff.loc[:, str(horizon-1)]
+
+            # for annotation
+            df_metric = plot_table_loss(cases_mse, cases_mccr, ['NMBF', 'MNFB', 'FB'], losses, horizons,
+                                input_dirs=input_dirs,
+                                output_dir=output_dir,
+                                station_name=station_name,
+                                target=target,
+                                sample_size=sample_size,
+                                output_size=output_size)
+            len_groups = len(losses) * len(cases)
+
+            # tab10 & tab20
+            # https://jrnold.github.io/ggthemes/reference/tableau_color_pal.html
+            ymin = np.finfo('float64').max
+            ymax = np.finfo('float64').min
+
+            # scale ylimit
+            _ymin, _ymax = axs[rowi].get_ylim()
+            df_plot = pd.melt(df_fb)
+
+            plot_cases_numeric = {c: i for i, c in enumerate(plot_cases)}
+            df_plot['case_num'] = df_plot['case'].map(lambda c: plot_cases_numeric[c])
+
+            sns.violinplot(data=df_plot,
+                x="case_num", y='value', hue="loss", split=True,
+                linewidth=1.7, saturation=1.0, inner='quartile',
+                ax=axs[rowi], zorder=2)
+
+            xtickslocs = axs[rowi].get_xticks()
+            ymin, ymax = axs[rowi].get_ylim()
+            yoff = ymin + abs(ymax - ymin) * 0.9
+            for i, xtickloc in enumerate(xtickslocs):
+                case_name = plot_cases[i]
+                nmbf_mse = df_metric.loc[idx[case_name, 'NMBF'], idx['MSE', horizon]]
+                nmbf_mccr = df_metric.loc[idx[case_name, 'NMBF'], idx['MCCR', horizon]]
+
+                # annotate MSE Loss
+                axs[rowi].annotate(
+                    '{0: .5f}'.format(nmbf_mse),
+                    xy=(xtickloc - 0.08, yoff),
+                    xycoords='data',
+                    xytext=(0, 0),
+                    textcoords='offset points',
+                    color='black',
+                    bbox=dict(boxstyle="square", fc='white', fill=True, linewidth=0.1),
+                    ha='right')
+
+                # annotate MCCR Loss
+                axs[rowi].annotate(
+                    '{0: .5f}'.format(nmbf_mccr),
+                    xy=(xtickloc + 0.08, yoff),
+                    xycoords='data',
+                    xytext=(0, 0),
+                    textcoords='offset points',
+                    color='black',
+                    bbox=dict(boxstyle="square", fc='white', fill=True, linewidth=0.1),
+                    ha='left')
+
+
+            if rowi == 0:
+                axs[rowi].set_xlabel('')
+            else:
+                axs[rowi].set_xlabel('Model')
+
+            axs[rowi].set_xticklabels(plot_cases)
+            axs[rowi].set_ylabel(fr"${TARGET_MAP[target]}$")
+            axs[rowi].set_ylabel(r'Bias ($M_i - O_i$)')
+            axs[rowi].yaxis.grid(True, zorder=-100)
+            axs[rowi].set_axisbelow(True)
+            axs[rowi].legend(fontsize='small', loc='lower right')
+
+        fig.tight_layout(h_pad=h_pad)
+        # fig.subplots_adjust(left=0.1, bottom=0.1, top=0.9)
+        output_prefix = f'{station_name}_{str(horizon).zfill(2)}h_bias_violin'
+        png_path = output_dir / (output_prefix + '.png')
+        svg_path = output_dir / (output_prefix + '.svg')
+        plt.savefig(png_path, dpi=600)
+        plt.savefig(svg_path)
+        plt.close(fig)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", nargs='?',
         type=str, default='종로구', help="station_name")
 
-    parser.add_argument("-l", "--loss", action='store_true')
-    parser.add_argument("-m", "--method", nargs='?',
-        default='mse', help="set method")
+    parser.add_argument("-e", "--error", action='store_true')
+    parser.add_argument("-b", "--bias", action='store_true')
     parser.add_argument("-s", "--sample", nargs='?',
         default='48', help="sample_size")
 
@@ -771,14 +868,15 @@ if __name__ == '__main__':
         station_name = '종로구'
 
     targets = ['PM10', 'PM25']
-    plot_cases = ['LSTNet (Skip)', 'TST']
 
-    if args["loss"]:
+    if args["error"]:
         sample_size = int(args["sample"])
-        plot_plot_tables_loss(plot_cases, station_name=station_name, targets=targets, sample_size=sample_size, output_size=24)
-    else:
-        if args["method"] == 'mse':
-            plot_plot_tables_mse(station_name=station_name, targets=targets, output_size=24)
-        else:
-            plot_plot_tables_mccr(station_name=station_name, targets=targets, output_size=24)
+        plot_cases = ['LSTNet (Skip)', 'TST']
+        plot_plot_tables_error(plot_cases, station_name=station_name, targets=targets, sample_size=sample_size, output_size=24)
+
+    if args["bias"]:
+        sample_size = int(args["sample"])
+        plot_cases = ['Attention', 'MLP (Multivariate)', 'LSTNet (Skip)', 'TST']
+        plot_plot_tables_bias(plot_cases, station_name=station_name, targets=targets, sample_size=sample_size, output_size=24)
+
 
