@@ -1,0 +1,17 @@
+  
+\documentclass[crop, tikz]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usetikzlibrary{positioning, decorations.pathmorphing, shapes}
+
+\begin{document}
+\begin{tikzpicture}	
+
+    \node[shape=rectangle, draw, thick, align=center] (E1) {1};
+	\node[shape=rectangle, draw, thick, right= of E1, align=center] (E2) {2};
+	\node[shape=rectangle, draw, thick, right= of E2, align=center] (E3) {3};
+
+\end{tikzpicture}
+\end{document}
