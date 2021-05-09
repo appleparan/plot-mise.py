@@ -478,10 +478,10 @@ def plot_table_loss(cases_mse, cases_mccr, metrics, losses, horizons, input_dirs
 
     cases_tot = cases_mccr[target]['Univariate'] + cases_mccr[target]['Multivariate']
     cases_tot_names = [CASE_DICT[c] for c in cases_tot]
-    rows = list(itertools.product(cases_tot_names, metrics))
+    rows = list(itertools.product(metrics, cases_tot_names))
     cols = list(itertools.product(losses, horizons))
 
-    mindex = pd.MultiIndex.from_tuples(rows, names=["model", "metric"])
+    mindex = pd.MultiIndex.from_tuples(rows, names=["metric", "model"])
     cindex = pd.MultiIndex.from_tuples(cols, names=["loss", "horizon"])
     df = pd.DataFrame(index=mindex, columns=cindex)
     idx = pd.IndexSlice
@@ -503,7 +503,7 @@ def plot_table_loss(cases_mse, cases_mccr, metrics, losses, horizons, input_dirs
                 #     print(loss, case, metric, res[horizons0])
 
                 # weird bug, can't assign lterables
-                df.loc[idx[CASE_DICT[case], metric], idx[loss, :]] = res[horizons0]
+                df.loc[idx[metric, CASE_DICT[case]], idx[loss, :]] = res[horizons0]
 
     df.to_csv(output_dir / (f'metrics_table_loss_{station_name}_{target}_{sample_size}.csv'))
 
@@ -549,7 +549,7 @@ def plot_tables_mse(station_name='종로구', targets=['PM10', 'PM25'], output_s
     output_dir = SCRIPT_DIR / 'out'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
 
-    metrics = ['RMSE', 'CORR', 'NMBF', 'NMAEF']
+    metrics = ['NMAEF', 'RMSE', 'CORR', 'NMBF']
     cases = {
         'PM10': {
             'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate'],
@@ -561,7 +561,8 @@ def plot_tables_mse(station_name='종로구', targets=['PM10', 'PM25'], output_s
         }
     }
     sample_sizes = [48, 72]
-    horizons = [1, 4, 8, 24]
+    # horizons = [1, 4, 8, 24]
+    horizons = [3, 6, 12, 24]
 
     input_dirs = {
         48: MSE_RESDIR,
@@ -582,7 +583,7 @@ def plot_tables_mccr(station_name='종로구', targets=['PM10', 'PM25'], output_
     output_dir = SCRIPT_DIR / 'out'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
 
-    metrics = ['RMSE', 'CORR', 'NMBF', 'NMAEF']
+    metrics = ['NMAEF', 'RMSE', 'CORR', 'NMBF']
     cases = {
         'PM10': {
             'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate'],
@@ -595,7 +596,8 @@ def plot_tables_mccr(station_name='종로구', targets=['PM10', 'PM25'], output_
     }
 
     sample_sizes = [48, 72]
-    horizons = [1, 4, 8, 24]
+    # horizons = [1, 4, 8, 24]
+    horizons = [3, 6, 12, 24]
 
     input_dirs = {
         48: MCCR_RESDIR,
@@ -617,7 +619,7 @@ def plot_tables_loss(station_name='종로구', targets=['PM10', 'PM25'], sample_
     output_dir = SCRIPT_DIR / 'out'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
 
-    metrics = ['RMSE', 'CORR', 'NMBF', 'NMAEF']
+    metrics = ['NMAEF', 'RMSE', 'CORR', 'NMBF']
     cases_mccr = {
         'PM10': {
             'Univariate': ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate'],
@@ -642,7 +644,8 @@ def plot_tables_loss(station_name='종로구', targets=['PM10', 'PM25'], sample_
 
 
     losses = ['MSE', 'MCCR']
-    horizons = [1, 4, 8, 24]
+    # horizons = [1, 4, 8, 24]
+    horizons = [3, 6, 12, 24]
 
     if sample_size == 48:
         input_dirs = {

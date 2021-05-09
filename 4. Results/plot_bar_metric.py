@@ -557,7 +557,8 @@ def plot_plot_tables_error(plot_cases, station_name='종로구', targets=['PM10'
     }
 
     losses = ['MSE', 'MCCR']
-    horizons = [1, 4, 8, 24]
+    # horizons = [1, 4, 8, 24]
+    horizons = [3, 6, 12, 24]
     cases = ['LSTNet (Skip)', 'TST']
 
     if sample_size == 48:
@@ -630,7 +631,7 @@ def plot_plot_tables_error(plot_cases, station_name='종로구', targets=['PM10'
                 ys = df.loc[idx[case, metric], idx[loss, :]]
                 ymin = min(ymin, np.amin(ys))
                 ymax = max(ymax, np.amax(ys))
-                print(f"{loss} - {case}", ymax, np.amax(ys))
+                print(f"{loss} - {metric} - {case}", ymax, np.amax(ys))
                 label = f"{loss} - {case}"
                 base = -1.5 * width
                 offset = reci * width
@@ -705,7 +706,8 @@ def plot_plot_tables_bias(plot_cases, station_name='종로구', targets=['PM10',
     }
 
     losses = ['MSE', 'MCCR']
-    horizons = [1, 4, 8, 24]
+    # horizons = [1, 4, 8, 24]
+    horizons = [3, 6, 12, 24]
 
     if sample_size == 48:
         input_dirs = {
