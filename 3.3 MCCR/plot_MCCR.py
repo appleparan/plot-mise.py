@@ -77,12 +77,12 @@ def plot():
         ycoord = mccr(style['annote_x'])
 
         axs.plot(x, y, color=style['color'], linestyle=style['linestyle'], linewidth=3)
-        axs.annotate(r'$\sigma\ =\ $' + f'{sigma:.1f}',
+        axs.annotate(r'$\alpha\ =\ $' + f'{sigma:.1f}',
                     xy=(style['annote_x'], ycoord),
                     xytext=(0, style['ytext']),
                     textcoords='offset points',
                     ha='center', va='bottom', fontsize='x-large')
-        axs.set_ylabel(r'$l_\sigma(Y_t - \hat{Y}_t)$', {'fontsize': 'x-large'})
+        axs.set_ylabel(r'$l_\alpha(Y_t - \hat{Y}_t)$', {'fontsize': 'x-large'})
         axs.set_xlabel(r'$Y_t - \hat{Y}_t$', {'fontsize': 'x-large'})
 
         for tick in axs.xaxis.get_major_ticks():
