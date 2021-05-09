@@ -491,16 +491,19 @@ def plot_pdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
 
             # bin size determined by Freedman–Diaconis rule, which is default
             # bw = lambda x: 2 * sp.stats.iqr(x) / np.power(len(x), 1.0/3.0)
-
+            if target == 'PM10':
+                binwidth = 100
+            else:
+                binwidth = 50
             # different color for
             sns.histplot(data=df_plot_raw.loc[:, target], ax=axs[rowi, 0],
-                         color='#1f77b460', stat='density')
+                         bins=binwidth, color='#1f77b460', stat='density')
             sns.kdeplot(data=df_plot_raw.loc[:, target], ax=axs[rowi, 0],
                         color='#ff7f0e', # tab10:orange
                         linewidth=2.5)
 
             sns.histplot(data=df_plot_res.loc[:, target], ax=axs[rowi, 1],
-                         color='#1f77b460', stat='density')
+                         bins=binwidth, color='#1f77b460', stat='density')
             sns.kdeplot(data=df_plot_res.loc[:, target], ax=axs[rowi, 1],
                         color='#ff7f0e', # tab10:orange
                         linewidth=2.5)
