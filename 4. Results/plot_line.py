@@ -112,13 +112,20 @@ def plot_line_dates(input_dir, output_dir, cases,
     fig_size_h = ax_size*nrows
 
     plot_dates = [
-        (dt.datetime(2019, 1, 1, 1).astimezone(SEOULTZ), dt.datetime(2019, 3, 31, 23).astimezone(SEOULTZ)),
-        (dt.datetime(2019, 4, 1, 0).astimezone(SEOULTZ), dt.datetime(2019, 6, 30, 23).astimezone(SEOULTZ)),
-        (dt.datetime(2019, 7, 1, 0).astimezone(SEOULTZ), dt.datetime(2019, 9, 30, 23).astimezone(SEOULTZ)),
-        (dt.datetime(2019, 10, 1, 0).astimezone(SEOULTZ), dt.datetime(2019, 12, 31, 23).astimezone(SEOULTZ)),
-        (dt.datetime(2020, 1, 1, 1).astimezone(SEOULTZ), dt.datetime(2020, 3, 31, 23).astimezone(SEOULTZ)),
-        (dt.datetime(2020, 4, 1, 0).astimezone(SEOULTZ), dt.datetime(2020, 6, 30, 23).astimezone(SEOULTZ)),
-        (dt.datetime(2020, 7, 1, 0).astimezone(SEOULTZ), dt.datetime(2020, 9, 30, 23).astimezone(SEOULTZ))]
+        (dt.datetime(2019, 1, 1, 1).astimezone(SEOULTZ), dt.datetime(2019, 2, 15, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2019, 2, 16, 0).astimezone(SEOULTZ), dt.datetime(2019, 3, 31, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2019, 4, 1, 0).astimezone(SEOULTZ), dt.datetime(2019, 5, 15, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2019, 5, 16, 0).astimezone(SEOULTZ), dt.datetime(2019, 6, 30, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2019, 7, 1, 0).astimezone(SEOULTZ), dt.datetime(2019, 8, 15, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2019, 8, 16, 0).astimezone(SEOULTZ), dt.datetime(2019, 9, 30, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2019, 10, 1, 0).astimezone(SEOULTZ), dt.datetime(2019, 11, 15, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2019, 11, 16, 0).astimezone(SEOULTZ), dt.datetime(2019, 12, 31, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2020, 1, 1, 1).astimezone(SEOULTZ), dt.datetime(2020, 2, 15, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2020, 2, 15, 1).astimezone(SEOULTZ), dt.datetime(2020, 3, 31, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2020, 4, 1, 0).astimezone(SEOULTZ), dt.datetime(2020, 5, 15, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2020, 5, 16, 0).astimezone(SEOULTZ), dt.datetime(2020, 6, 30, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2020, 7, 1, 0).astimezone(SEOULTZ), dt.datetime(2020, 8, 15, 23).astimezone(SEOULTZ)),
+        (dt.datetime(2020, 7, 16, 0).astimezone(SEOULTZ), dt.datetime(2020, 9, 30, 23).astimezone(SEOULTZ))]
 
     print(f"Plot {target} line plot for 3 months...")
     # create another directory
