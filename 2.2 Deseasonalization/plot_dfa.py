@@ -123,7 +123,7 @@ def plot():
 
             if rowi == nrows-1:
                 for coli in range(ncols):
-                    axs[rowi, coli].set_xlabel(r'lag $s$ (hour)', fontsize='small')
+                    axs[rowi, coli].set_xlabel(r'lag $r$ (hour)', fontsize='small')
 
             q_list = df.columns[1:]
             lag = df['s'].to_numpy()
@@ -143,13 +143,13 @@ def plot():
             gamma_annot[rowi, 0] = 2.0 * (1.0 - popt[1])
             estimated = model_func(lag, popt[0], popt[1])
             axs[rowi, 0].plot(lag, estimated,
-                        label=r'Fitted, $h(2) = {{{0:.2f}}}$'.format(
+                        label=r'Fitted, $h = {{{0:.2f}}}$'.format(
                             popt[1]),
                         alpha=1.0, color='tab:orange', linestyle='dashdot', linewidth=2.5)
             ## plot h(2) = 1/2
             base_lines = 10.0**(-2) * np.power(lag, 0.5)
             axs[rowi, 0].plot(lag, base_lines,
-                        label=r'Base, $h(2) = 0.5$',
+                        label=r'Base, $h = 0.5$',
                         alpha=0.7, color='tab:gray', linestyle='dashed', linewidth=2.5)
             # annotate
             # axs[rowi, 0].annotate(r'$h(2) = {{{0:.2f}}}, \gamma = {{{1:.2f}}}$'.format(
@@ -160,7 +160,7 @@ def plot():
             #                 bbox=dict(boxstyle="round", fc='white', linewidth=0.3),
             #                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2", linewidth=0.3),
             #                 fontsize='small')
-            print(f"{target} (raw) ({multipanel_labels[rowi, 0]}) - h(2): {coef_annot[rowi, 0]}, gamma: {gamma_annot[rowi, 0]}")
+            print(f"{target} (raw) ({multipanel_labels[rowi, 0]}) - h: {coef_annot[rowi, 0]}, xi: {gamma_annot[rowi, 0]}")
             # leg_handles, leg_labels = axs[rowi, 0].get_legend_handles_labels()
             # leg_labels[0] = r'$h(2)$'
             # axs[rowi, 0].get_legend().remove()
@@ -187,13 +187,13 @@ def plot():
             gamma_annot[rowi, 1] = 2.0 * (1.0 - popt[1])
             estimated = model_func(lag, popt[0], popt[1])
             axs[rowi, 1].plot(lag, estimated,
-                        label=r'Fitted, $h(2) = {{{0:.2f}}}$'.format(
+                        label=r'Fitted, $h = {{{0:.2f}}}$'.format(
                             popt[1]),
                         alpha=1.0, color='tab:orange', linestyle='dashdot', linewidth=2.5)
             ## plot h(2) = 1/2
             base_lines = 10.0**(-2) * np.power(lag, 0.5)
             axs[rowi, 1].plot(lag, base_lines,
-                        label=r'Base, $h(2) = 0.5$',
+                        label=r'Base, $h = 0.5$',
                         alpha=0.7, color='tab:gray', linestyle='dashed', linewidth=2.5)
             # axs[rowi, 1].annotate(r'$h(2) = {{{0:.2f}}}, \gamma = {{{1:.2f}}}$'.format(
             #                 coef_annot[rowi, 1], gamma_annot[rowi, 1]),
@@ -212,16 +212,16 @@ def plot():
             axs[rowi, 1].set_yscale('log')
 
             # set ylabel only for left plot
-            axs[rowi, 0].set_ylabel(r'$F(s)$' + f" - ${TARGET_MAP[target]}$")
+            axs[rowi, 0].set_ylabel(r'$V(s)$' + f" - ${TARGET_MAP[target]}$", fontsize='large')
             axs[rowi, 1].set_ylabel('')
 
             # set xlabel only for bottom plot
             if rowi == len(targets)-1:
-                axs[rowi, 0].set_xlabel(r'$s$')
-                axs[rowi, 1].set_xlabel(r'$s$')
+                axs[rowi, 0].set_xlabel(r'segment size $s$', fontsize='large')
+                axs[rowi, 1].set_xlabel(r'segment size $s$', fontsize='large')
             else:
-                axs[rowi, 0].set_xlabel('', fontsize='medium')
-                axs[rowi, 1].set_xlabel('', fontsize='medium')
+                axs[rowi, 0].set_xlabel('', fontsize='large')
+                axs[rowi, 1].set_xlabel('', fontsize='large')
 
         x_mins = np.zeros((len(targets), 2))
         x_maxs = np.zeros((len(targets), 2))
@@ -237,9 +237,9 @@ def plot():
 
             axs[rowi, coli].xaxis.grid(True, visible=True, which='major')
             for tick in axs[rowi, coli].xaxis.get_major_ticks():
-                tick.label.set_fontsize('small')
+                tick.label.set_fontsize('medium')
             for tick in axs[rowi, coli].yaxis.get_major_ticks():
-                tick.label.set_fontsize('small')
+                tick.label.set_fontsize('medium')
 
             tot_max = np.amax([np.amax(x_maxs[rowi, :]), np.amax(y_maxs[rowi, :])])
             tot_xmin = np.power(10, np.floor(np.log10(np.amin(x_mins[rowi, :]))))

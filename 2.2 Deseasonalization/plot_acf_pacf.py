@@ -81,7 +81,7 @@ def plot():
     # 4, 8: PACF (desea)
     # Seasonality
     nrows = 2
-    ncols = 4
+    ncols = 2
     if nrows == 1 or ncols == 1:
         # 1D
         multipanel_labels = np.array(list(string.ascii_uppercase)[:ncols])
@@ -136,26 +136,26 @@ def plot():
 
             tpl.plot_acf(df_raw[target], ax=axs[rowi, 0], fft=True, lags=nlags*24,
                          use_vlines=False, marker=None, linestyle='solid', linewidth=2.5)
-            tpl.plot_acf(df_res[target], ax=axs[rowi, 2], fft=True, lags=nlags*24,
+            tpl.plot_acf(df_res[target], ax=axs[rowi, 1], fft=True, lags=nlags*24,
                          use_vlines=False, marker=None, linestyle='solid', linewidth=2.5)
 
-            axs[rowi, 0].set_ylabel(r'$C(s)$ - $\mathrm{{{0:s}}}$'.format(TARGET_MAP[target]), fontsize='large')
+            axs[rowi, 0].set_ylabel(r'$C(r)$ - $\mathrm{{{0:s}}}$'.format(TARGET_MAP[target]), fontsize='large')
 
-            tpl.plot_pacf(df_raw[target], ax=axs[rowi, 1], lags=12,
-                          use_vlines=True, markersize=5, linewidth=2.5)
-            tpl.plot_pacf(df_res[target], ax=axs[rowi, 3], lags=12,
-                          use_vlines=True, markersize=5, linewidth=2.5)
+            # tpl.plot_pacf(df_raw[target], ax=axs[rowi, 1], lags=12,
+            #               use_vlines=True, markersize=5, linewidth=2.5)
+            # tpl.plot_pacf(df_res[target], ax=axs[rowi, 3], lags=12,
+            #               use_vlines=True, markersize=5, linewidth=2.5)
 
             if rowi == nrows-1:
                 for coli in range(ncols):
-                    axs[rowi, coli].set_xlabel(r'lag $s$ (hour)', fontsize='large')
+                    axs[rowi, coli].set_xlabel(r'lag $r$ (hour)', fontsize='large')
 
             # ACF
             axs[rowi, 0].xaxis.set_major_locator(mticker.MultipleLocator(24))
-            axs[rowi, 2].xaxis.set_major_locator(mticker.MultipleLocator(24))
+            axs[rowi, 1].xaxis.set_major_locator(mticker.MultipleLocator(24))
             # PACF
-            axs[rowi, 1].xaxis.set_major_locator(mticker.MultipleLocator(6))
-            axs[rowi, 3].xaxis.set_major_locator(mticker.MultipleLocator(6))
+            # axs[rowi, 1].xaxis.set_major_locator(mticker.MultipleLocator(6))
+            # axs[rowi, 3].xaxis.set_major_locator(mticker.MultipleLocator(6))
             for coli in range(ncols):
                 axs[rowi, coli].set_title("")
                 axs[rowi, coli].yaxis.set_major_locator(mticker.MultipleLocator(0.2))
