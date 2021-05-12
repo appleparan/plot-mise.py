@@ -141,18 +141,18 @@ def plot_ccdf(targets=['PM10', 'PM25'], sample_size=48, output_size=24):
             print(f"{target} - res lognormal - mu, sigma : {res_fit.lognormal.mu}, {res_fit.lognormal.sigma}")
 
             axs[0, 0].set_title('Raw')
-            axs[0, 1].set_title('Deseasonlized')
+            axs[0, 1].set_title('Deseasonalized')
 
             # disable y label on right side plot
-            axs[rowi, 0].set_ylabel(f"CCDF - " + rf"${TARGET_MAP[target]}$")
+            axs[rowi, 0].set_ylabel(f"CCDF", fontsize='medium')
             axs[rowi, 1].yaxis.label.set_visible(False)
 
             # remove legend title
             for coli in range(2):
                 # axs[rowi, coli].legend(loc='best')
+                axs[rowi, coli].set_xlabel(rf"${TARGET_MAP[target]}$", fontsize='medium')
                 axs[rowi, coli].legend()
                 axs[rowi, coli].grid(True, zorder=-5)
-                axs[rowi, 1].set_xlabel('')
                 # axs[rowi, coli].set_xlabel(target)
                 axs[rowi, coli].set_yscale('log')
                 axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.05), xycoords='axes fraction',
@@ -572,8 +572,3 @@ if __name__ == '__main__':
 
     if args["ccdf"] != None:
         plot_ccdf(targets=targets, sample_size=48, output_size=24)
-
-
-
-
-
