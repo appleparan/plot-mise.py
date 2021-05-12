@@ -53,32 +53,20 @@ TARGET_MAP = {
     'snow': r'\mathrm{\mathsf{Snow}}'
 }
 
-def plot():
+def plot(is_precompute=False):
+    sns.set_context('paper')
+    sns.set_palette('tab10')
+
     jongno_fname = 'input_jongno_imputed_hourly_pandas.csv'
     seoul_fname = 'input_seoul_imputed_hourly_pandas.csv'
 
     output_dir = SCRIPT_DIR / 'out'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
 
-    plot_data_dir = SCRIPT_DIR / 'out' / 'csv'
-    Path.mkdir(plot_data_dir, parents=True, exist_ok=True)
-    plot_png_dir = SCRIPT_DIR / 'out' / 'png'
-    Path.mkdir(plot_png_dir, parents=True, exist_ok=True)
-    plot_svg_dir = SCRIPT_DIR / 'out' / 'svg'
-    Path.mkdir(plot_svg_dir, parents=True, exist_ok=True)
-
     stations = ['종로구']
     targets = ['PM10', 'PM25']
     nlags = 7
 
-    # 1 2 3 4
-    # 5 6 7 8
-    # PM10: 1, 2, 3
-    # PM25: 4, 5, 6
-    # 1, 5: ACF (raw)
-    # 2, 6: PACF (raw)
-    # 3, 7: ACF (desea)
-    # 4, 8: PACF (desea)
     # Seasonality
     nrows = 2
     ncols = 5
@@ -117,6 +105,12 @@ def plot():
         fig.subplots_adjust(left=0.1, bottom=0.15, top=0.9)
 
         for rowi, target in enumerate(targets):
+            plot_data_dir = SCRIPT_DIR / 'out' / 'sea' / station_name / target / 'csv'
+            Path.mkdir(plot_data_dir, parents=True, exist_ok=True)
+            plot_png_dir = SCRIPT_DIR / 'out' / 'sea' / station_name / target / 'png'
+            Path.mkdir(plot_png_dir, parents=True, exist_ok=True)
+            plot_svg_dir = SCRIPT_DIR / 'out' / 'sea' / station_name / target / 'svg'
+            Path.mkdir(plot_svg_dir, parents=True, exist_ok=True)
             Path.mkdir(plot_data_dir / target, parents=True, exist_ok=True)
             Path.mkdir(plot_png_dir  / target, parents=True, exist_ok=True)
             Path.mkdir(plot_svg_dir  / target, parents=True, exist_ok=True)
@@ -130,66 +124,67 @@ def plot():
                             sample_size=48,
                             output_size=24)
             dataset.preprocess()
+            if is_precompute == False:
+                dataset.plot_seasonality(plot_data_dir, plot_png_dir, plot_svg_dir)
+                continue
 
             df_raw = dataset.ys_raw
             df_res = dataset.ys
 
-            data_path = Path('sea') / station_name / target / 'csv' / 'seasonality_fused'
+            data_path = plot_data_dir
             fdate = dt.datetime(2016, 1, 1, 0).astimezone(SEOULTZ)
             tdate = dt.datetime(2016, 12, 31, 23).astimezone(SEOULTZ)
             df_raw_2016 = df_raw[(df_raw.index >= fdate) & (df_raw.index <= tdate)]
-            scaler = datset._scaler_Y.named_transformers_['num']
-            p['seasonalitydecompositor'].plot_fused(self._xs_raw, self.target,
-                                          self.fdate, self.tdate, data_dir, png_dir, svg_dir)
-            df_sea_year = pd.read_csv(data_path / 'sea_annual.csv',
+            df_res_2016 = df_res[(df_res.index >= fdate) & (df_res.index <= tdate)]
+            df_sea_year = pd.read_csv(data_path / 'annual_seasonality_20160101_20161231.csv',
                                         index_col=[0],
                                         parse_dates=['date'])
-            #df_sea_year.set_index('date', inplace=True)
-            df_sea_week = pd.read_csv(data_path / 'sea_weekly.csv',
+            df_sea_week = pd.read_csv(data_path / 'weekly_seasonality_20160307_20160313.csv',
                                         index_col=[0],
-                                        parse_dates=['date'])
-            df_sea_hour = pd.read_csv(data_path / 'sea_hourly.csv',
+                                        parse_dates=['day'])
+            df_sea_hour = pd.read_csv(data_path / 'hourly_seasonality_2016050100_2016050123.csv',
                                         index_col=[0],
-                                        parse_dates=['date'])
-            ws = df_sea_week['ws'].to_numpy()
-            hs = df_sea_hour['hs'].to_numpy()
-            for index, value in df_res_2016.items():
-                w = index.weekday()
-                h = index.hour
-                idx = index
-                yval = df_sea_year[df_sea_year['date'] == idx.replace(hour=0)]
+                                        parse_dates=['hour'])
 
-                # print(float(yval['ys_smooth']))
-                df_res_2016[index] = value - \
-                    yval['ys_smooth'].to_numpy()[0] - ws[w] - hs[h]
-
-            # original
+            # axs[rowi, 0] == raw values
             sns.lineplot(data=df_raw_2016, ax=axs[rowi, 0], legend=False, linewidth=0.5)
 
             # smoothing is true
+            # axs[rowi, 1] == yearly seasonality
             if 'ys_smooth' in df_sea_year.columns:
+                # convert wide-form dataframe to long-form
+                _df_sea_year = df_sea_year.reset_index()
+                _df_sea_year = _df_sea_year.rename(columns={'index': 'date'})
                 sns.lineplot(x='date', y='value', hue='variable',
-                            data=pd.melt(df_sea_year, ['date']), ax=axs[1], linewidth=1.0)
+                    data=pd.melt(_df_sea_year, ['date']), ax=axs[rowi, 1],
+                    palette=['#1f76b4', '#d62728'], linewidth=1.0)
+
+                # thicken yearly seasonality with smoothing
+                axs[rowi, 1].lines[1].set_linewidth(2.0)
+                # # set yearly seasonality with smoothing 'tab10:red
+                # axs[rowi, 1].lines[1].set_color('#d62728')
+                # lighten yearly seasonality without smoothing
+                axs[rowi, 1].lines[0].set_alpha(0.6)
 
                 # add legend
                 leg_handles, leg_labels = axs[rowi, 1].get_legend_handles_labels()
                 dic = {'ys_vanilla': 'raw', 'ys_smooth': 'smooth'}
                 leg_labels = [dic.get(l, l) for l in leg_labels]
                 # remove legend title
-                axs[1].legend(leg_handles, leg_labels,
+                axs[rowi,1].legend(leg_handles, leg_labels,
                                 fancybox=True,
                                 fontsize='small')
             else:
                 sns.lineplot(x='date', y='ys',
                                 data=df_sea_year, ax=axs[rowi, 1], legend=False)
 
-            # ax[2] == weekly seasoanlity
+            # axs[rowi, 2] == weekly seasonality
             sns.lineplot(data=df_sea_week, ax=axs[rowi, 2], legend=False)
-            # ax[3] == hourly seasoanlity
+            # axs[rowi, 3] == hourly seasonality
             sns.lineplot(data=df_sea_hour, ax=axs[rowi, 3], legend=False)
+            # axs[rowi, 4] == residuals
             sns.lineplot(data=df_res_2016, ax=axs[rowi, 4], legend=False, linewidth=0.5)
 
-                
             axs[rowi, 0].xaxis.set_major_locator(
                 mdates.MonthLocator(bymonth=[1, 4, 7, 10], tz=SEOULTZ))
             axs[rowi, 0].xaxis.set_minor_locator(
@@ -223,30 +218,35 @@ def plot():
             axs[rowi, 4].xaxis.set_major_formatter(
                 mdates.DateFormatter('%m', tz=SEOULTZ))
 
-            axs[rowi, 0].set_ylabel(r'$C(s)$ - $\mathrm{{{0:s}}}$'.format(TARGET_MAP[target]), fontsize='large')
+            if rowi != 0:
+                axs[rowi, 0].set_xlabel('MONTH', fontsize='small')
+                axs[rowi, 1].set_xlabel('MONTH', fontsize='small')
+                axs[rowi, 2].set_xlabel('WEEKDAY', fontsize='small')
+                axs[rowi, 3].set_xlabel('HOUR', fontsize='small')
+                axs[rowi, 4].set_xlabel('MONTH', fontsize='small')
+            else:
+                for coli in range(ncols):
+                    axs[rowi, coli].set_xlabel('')
 
-            axs[rowi, 0].set_ylabel(r'$\mathrm{{{0:s}}}$'.format(
-                feature_map[target]), fontsize='medium')
-            axs[rowi, 0].set_xlabel('MONTH', fontsize='small')
-            axs[rowi, 1].set_ylabel('', fontsize='small')
-            axs[rowi, 1].set_xlabel('MONTH', fontsize='small')
-            axs[rowi, 2].set_xlabel('WEEKDAY', fontsize='small')
-            axs[rowi, 3].set_xlabel('HOUR', fontsize='small')
-            axs[rowi, 4].set_xlabel('MONTH', fontsize='small')
-            axs[rowi, 4].set_ylabel('', fontsize='small')
+            for coli in range(ncols):
+                if coli == 0:
+                    axs[rowi, coli].set_ylabel(r'$\mathrm{{{0:s}}}$'.format(
+                        TARGET_MAP[target]), fontsize='medium')
+                else:
+                    axs[rowi, coli].set_ylabel('')
 
             for coli in range(ncols):
                 axs[rowi, coli].set_title("")
                 #axs[i].set_ylabel(target, fontsize='small')
                 axs[rowi, coli].xaxis.grid(True, visible=True, which='major')
                 for tick in axs[rowi, coli].xaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
+                    tick.label.set_fontsize('small')
                 for tick in axs[rowi, coli].yaxis.get_major_ticks():
-                    tick.label.set_fontsize('x-small')
+                    tick.label.set_fontsize('small')
 
-                axs[rowi, coli].annotate(multipanel_labels[coli], (-0.08, 1.02), xycoords='axes fraction',
+                axs[rowi, coli].annotate(multipanel_labels[rowi, coli], (-0.08, 1.02), xycoords='axes fraction',
                                 fontsize='large', fontweight='bold')
-                
+
             # dataset.plot_seasonality(plot_data_dir / target, plot_png_dir / target, plot_svg_dir / target)
         fig.tight_layout()
         output_fname = f"{station_name}_sea"
@@ -257,4 +257,11 @@ def plot():
         plt.close()
 
 if __name__ == '__main__':
-    plot()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--precompute", action='store_true',
+        default='False', help="using precomputed seasonality, if not, just compute seasonality")
+
+    args = vars(parser.parse_args())
+
+    is_precompute = args['precompute']
+    plot(is_precompute=is_precompute)

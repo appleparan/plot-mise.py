@@ -250,7 +250,7 @@ def plot():
                                 fontsize='large', fontweight='bold')
 
         axs[0, 0].set_title('Raw')
-        axs[0, 1].set_title('Deseasonlized')
+        axs[0, 1].set_title('Deseasonalized')
 
         output_fname = f"{station_name}_DFA2"
         png_path = output_dir / (output_fname + '.png')
