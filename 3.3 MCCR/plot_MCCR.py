@@ -36,26 +36,26 @@ def plot():
     output_dir = SCRIPT_DIR / 'out'
     Path.mkdir(output_dir, parents=True, exist_ok=True)
 
-    nx = 121
-    x = np.linspace(-6, 6, num=nx)
-    sigmas = [0.6, 0.8, 1.1]
+    nx = 301
+    x = np.linspace(-15, 15, num=nx)
+    sigmas = [2.0, 4.0, 5.0]
     styles = [
         {
             'color': 'tab:blue',
             'linestyle': 'solid',
-            'annote_x': 4.5,
+            'annote_x': 12.5,
             'ytext': 4,
         },
         {
             'color': 'tab:orange',
             'linestyle': 'dashed',
-            'annote_x': -4.0,
+            'annote_x': -12.5,
             'ytext': 4,
         },
         {
             'color': 'tab:green',
             'linestyle': 'dashdot',
-            'annote_x': 4.5,
+            'annote_x': 12.5,
             'ytext': -20,
         }
     ]
