@@ -105,7 +105,8 @@ def find_case(model, target, cases):
 def plot_horizons(input_dir, output_dir, horizons, model, cases,
         station_name="종로구", target="PM10", loss='MSE',
         output_size=24):
-
+    sns.set_context('paper')
+    sns.set_palette('tab10')
     nrows = 2
     ncols = 4
     multipanel_labels = np.array(list(string.ascii_uppercase)[:(nrows*ncols)]).reshape(nrows, ncols)
@@ -173,7 +174,7 @@ def plot_horizons(input_dir, output_dir, horizons, model, cases,
         axs[0, coli].set_xlim([0.0, maxval*1.1])
         axs[0, coli].set_ylim([0.0, maxval*1.1])
 
-        axs[0, coli].set_xlabel('target')
+        axs[0, coli].set_xlabel('actual')
 
         if coli == 0:
             axs[0, coli].set_ylabel('predicted')
@@ -194,8 +195,8 @@ def plot_horizons(input_dir, output_dir, horizons, model, cases,
         obs_dates = df_obs_dates.loc[:, str(h - 1)].to_numpy()
         sim_dates = df_sim_dates.loc[:, str(h - 1)].to_numpy()
         maxval = np.nanmax([np.nanmax(obs_dates), np.nanmax(sim_dates)])
-        axs[1, coli].plot(dates, obs_dates, color="tab:blue", linewidth=1.0, alpha=0.8, label="obs")
-        axs[1, coli].plot(dates, sim_dates, color="tab:orange", linewidth=1.0, alpha=0.8, label="sim")
+        axs[1, coli].plot(dates, obs_dates, color="tab:blue", linewidth=1.0, alpha=0.8, label="target")
+        axs[1, coli].plot(dates, sim_dates, color="tab:orange", linewidth=1.5, alpha=0.8, label="predicted")
 
         axs[1, coli].xaxis.set_major_locator(
             mdates.MonthLocator(interval=1, tz=SEOULTZ))
@@ -206,6 +207,7 @@ def plot_horizons(input_dir, output_dir, horizons, model, cases,
                             fontsize='medium', fontweight='bold')
         axs[1, coli].set_ylim([0.0, maxval*1.1])
         axs[1, coli].set_xlabel('date')
+        axs[1, coli].legend()
 
         if coli == 0:
             axs[1, coli].set_ylabel(r'$' + TARGET_MAP[target] + r'$')
@@ -226,10 +228,10 @@ def plot_horizons(input_dir, output_dir, horizons, model, cases,
     plt.close(fig)
 
 def plot_mse(station_name="종로구", targets=["PM10", "PM25"], sample_size=48, output_size=24):
-    cases_PM10 = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate',
-        'XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
-    cases_PM25 = ['OU', 'ARIMA_(3, 0, 0)', 'MLPMSMCCRUnivariate', 'RNNAttentionMCCRUnivariate',
-        'XGBoost', 'MLPMSMCCRMultivariate', 'RNNLSTNetSkipMCCRMultivariate', 'MLPTransformerMCCRMultivariate']
+    cases_PM10 = ['OU', 'ARIMA_(2, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
+        'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
+    cases_PM25 = ['OU', 'ARIMA_(3, 0, 0)', 'MLPMSUnivariate', 'RNNAttentionUnivariate',
+        'XGBoost', 'MLPMSMultivariate', 'RNNLSTNetSkipMultivariate', 'MLPTransformerMultivariate']
 
     output_dir = SCRIPT_DIR / ('out' + str(sample_size)) / 'horizon_mse'
     Path.mkdir(output_dir, parents=True, exist_ok=True)

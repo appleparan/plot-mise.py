@@ -167,7 +167,7 @@ def plot_scatter(input_dir, output_dir, cases,
             if rowi == 0:
                 axs[rowi, coli].set_xlabel('')
             else:
-                axs[rowi, coli].set_xlabel('target')
+                axs[rowi, coli].set_xlabel('actual')
 
             if coli == 0:
                 axs[rowi, coli].set_ylabel('predicted')
