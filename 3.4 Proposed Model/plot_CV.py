@@ -88,8 +88,8 @@ def plot():
         duration_train = train_tdate - train_fdate
         duration_valid = valid_tdate - valid_fdate
         if i_d == 0:
-            train_label = 'train'
-            valid_label = 'valid'
+            train_label = 'training'
+            valid_label = 'validation'
         else:
             train_label = None
             valid_label = None

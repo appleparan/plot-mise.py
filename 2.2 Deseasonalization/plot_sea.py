@@ -168,7 +168,7 @@ def plot(is_precompute=False):
 
                 # add legend
                 leg_handles, leg_labels = axs[rowi, 1].get_legend_handles_labels()
-                dic = {'ys_vanilla': 'raw', 'ys_smooth': 'smooth'}
+                dic = {'ys_vanilla': 'raw', 'ys_smooth': 'smoothed'}
                 leg_labels = [dic.get(l, l) for l in leg_labels]
                 # remove legend title
                 axs[rowi,1].legend(leg_handles, leg_labels,
@@ -219,11 +219,11 @@ def plot(is_precompute=False):
                 mdates.DateFormatter('%m', tz=SEOULTZ))
 
             if rowi != 0:
-                axs[rowi, 0].set_xlabel('MONTH', fontsize='small')
-                axs[rowi, 1].set_xlabel('MONTH', fontsize='small')
-                axs[rowi, 2].set_xlabel('WEEKDAY', fontsize='small')
-                axs[rowi, 3].set_xlabel('HOUR', fontsize='small')
-                axs[rowi, 4].set_xlabel('MONTH', fontsize='small')
+                axs[rowi, 0].set_xlabel('month', fontsize='small')
+                axs[rowi, 1].set_xlabel('month', fontsize='small')
+                axs[rowi, 2].set_xlabel('weekday', fontsize='small')
+                axs[rowi, 3].set_xlabel('hour', fontsize='small')
+                axs[rowi, 4].set_xlabel('month', fontsize='small')
             else:
                 for coli in range(ncols):
                     axs[rowi, coli].set_xlabel('')
