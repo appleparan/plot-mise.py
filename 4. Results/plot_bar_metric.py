@@ -837,8 +837,8 @@ def plot_plot_tables_bias(plot_cases, station_name='종로구', targets=['PM10',
                 axs[rowi].set_xlabel('Model')
 
             axs[rowi].set_xticklabels(plot_cases)
-            axs[rowi].set_ylabel(fr"${TARGET_MAP[target]}$")
-            axs[rowi].set_ylabel(r'Bias ($M_i - O_i$)')
+            # axs[rowi].set_ylabel(fr"${TARGET_MAP[target]}$")
+            axs[rowi].set_ylabel(fr'Bias ($M_i - O_i$), ${TARGET_MAP[target]}$')
             axs[rowi].yaxis.grid(True, zorder=-100)
             axs[rowi].set_axisbelow(True)
             axs[rowi].legend(fontsize='small', loc='lower right')
